@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "name": "Ichiraku Ramen",
+    "cuisine": "Japanese",
+    "address": "123 Noodle Way",
+    "is_open": true
+  },
+  {
+    "id": 2,
+    "name": "Bella Napoli",
+    "cuisine": "Italian",
+    "address": "456 Pizza Blvd",
+    "is_open": true
+  },
+  {
+    "id": 3,
+    "name": "Dragon Wok",
+    "cuisine": "Chinese",
+    "address": "789 Spice Ave",
+    "is_open": false
+  }
+]
+
+//Data is AI generated
