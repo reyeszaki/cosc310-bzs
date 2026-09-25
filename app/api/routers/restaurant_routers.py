@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
-from app.models.restaurant import Restaurant
-from app.repositories.restaurant_repository import RestaurantRepository
+
+from app.repository.restaurant_repo import RestaurantRepository
+from app.schema.restaurant_schema import Restaurant
 from app.services.restaurant_service import RestaurantService
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
-# Instantiate dependencies (using default data path)
 repo = RestaurantRepository()
 service = RestaurantService(repo)
 
