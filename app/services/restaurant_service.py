@@ -1,5 +1,5 @@
-from app.models.restaurant import Restaurant
-from app.repositories.restaurant_repository import RestaurantRepository
+from app.repository.restaurant_repo import RestaurantRepository
+from app.schema.restaurant_schema import Restaurant
 
 
 class RestaurantService:
