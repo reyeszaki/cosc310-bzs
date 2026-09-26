@@ -24,7 +24,8 @@ def test_get_restaurants():
     assert "id" in restaurant
     assert "name" in restaurant
     assert "cuisine" in restaurant
-    assert "rating" in restaurant
+    assert "address" in restaurant  
+    assert "is_open" in restaurant  
 
 def test_invalid_endpoint_failure_case():
     """Test a failure/invalid case (404 Not Found) as required for Milestone 0."""
