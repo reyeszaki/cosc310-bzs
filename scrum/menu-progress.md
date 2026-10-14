@@ -9,5 +9,3 @@ Completed: menu view and category filtering; add, partial update, and remove ite
 Verification: `python -m pytest -q` passed locally (37 tests).
 
 Handoff: B should use the existing integer restaurant IDs. D can consume the endpoints in `docs/menu-api.md` and the generated `/docs` API documentation. The frontend should show unavailable items clearly and format prices to two decimal places.
-
-Remaining collaboration: link this branch to the assigned GitHub issue, have another teammate review the implementation and Decision Receipt, integrate D's UI, and rehearse the demo. No team meeting, review, or agreement is recorded as having occurred.
