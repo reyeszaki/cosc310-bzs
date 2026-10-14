@@ -161,3 +161,18 @@ It includes a version number and is reviewed each week. Changes must be agreed t
 The final M0 version will be tagged `foundation-gate` after the required work has been merged and checked.
 
 The submitted tag identifies the version used for assessment. It must not be moved or overwritten after the deadline.
+
+## M1 Part C: Menus
+
+The menu backend supports viewing menus, category filtering, adding/updating/removing items, and availability toggles. It uses Pydantic validation and persistent `data/menu_items.json` storage through route -> service -> repository -> JSON.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/restaurants/{restaurant_id}/menu?category=drinks` | View a menu; category is optional. |
+| POST | `/restaurants/{restaurant_id}/menu/items` | Add an item (201). |
+| PATCH | `/restaurants/{restaurant_id}/menu/items/{item_id}` | Update selected fields. |
+| DELETE | `/restaurants/{restaurant_id}/menu/items/{item_id}` | Remove an item (204). |
+
+See [menu API handoff](docs/menu-api.md) for request/response examples, validation rules, story mapping, and demo steps. Open `/docs` to try the endpoints. Run `python -m pytest -q` for all tests, including menu tests using temporary data files. Use a single API worker with the JSON repository.
+
+The [Decision Receipt](docs/decision-menu-storage.md) is pending teammate review. AI assistance is recorded in [provenance](docs/PROVENANCE.md), and the implementation handoff is recorded in [scrum notes](scrum/menu-progress.md).
