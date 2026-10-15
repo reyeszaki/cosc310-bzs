@@ -173,6 +173,6 @@ The menu backend supports viewing menus, category filtering, adding/updating/rem
 | PATCH | `/restaurants/{restaurant_id}/menu/items/{item_id}` | Update selected fields. |
 | DELETE | `/restaurants/{restaurant_id}/menu/items/{item_id}` | Remove an item (204). |
 
-See [menu API handoff](docs/menu-api.md) for request/response examples, validation rules, story mapping, and demo steps. Open `/docs` to try the endpoints. Run `python -m pytest -q` for all tests, including menu tests using temporary data files. Use a single API worker with the JSON repository.
+See [menu API handoff](docs/menu-api.md) for the API contract, validation rules, and simple demo steps. Open `/docs` to try the endpoints. Run `python -m pytest -q` for all tests, including menu tests using temporary data files. Use a single API worker with the JSON repository.
 
-The [Decision Receipt](docs/decision-menu-storage.md) is pending teammate review. AI assistance is recorded in [provenance](docs/PROVENANCE.md), and the implementation handoff is recorded in [scrum notes](scrum/menu-progress.md).
+AI assistance is recorded in [provenance](docs/PROVENANCE.md).
