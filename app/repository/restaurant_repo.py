@@ -52,3 +52,13 @@ class RestaurantRepository:
                     json.dump(restaurants, f, indent=2)
                 return item
         return None
+
+    def delete(self, restaurant_id: int) -> dict | None:
+        restaurants = self.get_all()
+        for item in restaurants:
+            if item.get("id") == restaurant_id:
+                restaurants.remove(item)
+                with open(self.data_path, "w", encoding="utf-8") as f:
+                    json.dump(restaurants, f, indent=2)
+                return item
+        return None

@@ -40,5 +40,12 @@ def update_restaurant(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         )
+@router.delete("/{restaurant_id}", response_model=Restaurant)
+def delete_restaurant(restaurant_id: int) -> Restaurant:
+    try:
+        return service.delete_restaurant(restaurant_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc),)
+
 
 

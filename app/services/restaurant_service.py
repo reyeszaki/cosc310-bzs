@@ -28,6 +28,12 @@ class RestaurantService:
 
         return Restaurant(**saved_restaurant)
 
+    def delete_restaurant(self, restaurant_id: int) -> Restaurant:
+        deleted = self.repository.delete(restaurant_id)
+
+        if deleted is None:
+            raise LookupError(f"Restaurant with id {restaurant_id} not found")
+        return Restaurant(**deleted)
 
 
 

@@ -19,3 +19,5 @@ class UpdateRestaurant(BaseModel):
     cuisine: str = Field(min_length=1)
     address: str = Field(min_length=1)
     is_open: bool
+    
+
