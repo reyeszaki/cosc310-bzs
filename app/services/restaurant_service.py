@@ -1,5 +1,5 @@
 from app.repository.restaurant_repo import RestaurantRepository
-from app.schema.restaurant_schema import Restaurant
+from app.schema.restaurant_schema import Restaurant, CreateRestaurant, UpdateRestaurant
 
 
 class RestaurantService:
@@ -15,6 +15,26 @@ class RestaurantService:
         if raw_item is None:
             raise LookupError(f"Restaurant with id {restaurant_id} not found")
         return Restaurant(**raw_item)
+
+    def create_restaurant(self, restaurant: CreateRestaurant) -> Restaurant:
+        saved_restaurant = self.repository.create(restaurant.model_dump())
+        return Restaurant(**saved_restaurant)
+
+    def update_restaurant(self, restaurant_id: int, restaurant: UpdateRestaurant) -> Restaurant:
+        saved_restaurant = self.repository.update(restaurant_id, restaurant.model_dump(),)
+
+        if saved_restaurant is None:
+            raise LookupError(f"Restaurant doesnt match with id {restaurant_id} not found")
+
+        return Restaurant(**saved_restaurant)
+
+    def delete_restaurant(self, restaurant_id: int) -> Restaurant:
+        deleted = self.repository.delete(restaurant_id)
+
+        if deleted is None:
+            raise LookupError(f"Restaurant with id {restaurant_id} not found")
+        return Restaurant(**deleted)
+
 
     def search_restaurants(
         self,
