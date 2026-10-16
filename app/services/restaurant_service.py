@@ -16,9 +16,23 @@ class RestaurantService:
             raise LookupError(f"Restaurant with id {restaurant_id} not found")
         return Restaurant(**raw_item)
 
-    def search_restaurants(self, search: str | None = None) -> list[Restaurant]:
+    def search_restaurants(
+        self,
+        search: str | None = None,
+        cuisine: str | None = None,
+        is_open: bool | None = None,
+    ) -> list[Restaurant]:
         restaurants = self.list_restaurants()
-        if search is None or search.strip() == "":
-            return restaurants
-        term = search.strip().casefold()
-        return [r for r in restaurants if term in r.name.casefold()]
+
+        if search is not None and search.strip() != "":
+            term = search.strip().casefold()
+            restaurants = [r for r in restaurants if term in r.name.casefold()]
+
+        if cuisine is not None and cuisine.strip() != "":
+            wanted = cuisine.strip().casefold()
+            restaurants = [r for r in restaurants if r.cuisine.casefold() == wanted]
+
+        if is_open is not None:
+            restaurants = [r for r in restaurants if r.is_open == is_open]
+
+        return restaurants

@@ -43,7 +43,9 @@ def test_invalid_endpoint_failure_case():
 SEARCH_SEED = [
     {"id": 1, "name": "Pizza Place", "cuisine": "Italian", "address": "456 Pizza Ave", "is_open": True},
     {"id": 2, "name": "Burger King", "cuisine": "American", "address": "1 Pizza St", "is_open": False},
+    {"id": 3, "name": "Luigi's", "cuisine": "Italian", "address": "9 Main St", "is_open": False},
 ]
+
 
 def make_search_service(tmp_path):
     test_file = tmp_path / "test_restaurants.json"
@@ -52,10 +54,13 @@ def make_search_service(tmp_path):
     return RestaurantService(repo)
 
 
+def ids(restaurants):
+    return [r.id for r in restaurants]
+
+
 def test_restaurant_search(tmp_path):
     results = make_search_service(tmp_path).search_restaurants("pizza")
-    assert len(results) == 1
-    assert results[0].name == "Pizza Place"
+    assert ids(results) == [1]
 
 
 def test_search_no_match(tmp_path):
@@ -63,11 +68,26 @@ def test_search_no_match(tmp_path):
 
 
 def test_search_blank_returns_all(tmp_path):
-    assert len(make_search_service(tmp_path).search_restaurants("   ")) == 2
+    assert len(make_search_service(tmp_path).search_restaurants("   ")) == 3
 
 
 def test_search_no_argument_returns_all(tmp_path):
-    assert len(make_search_service(tmp_path).search_restaurants()) == 2
+    assert len(make_search_service(tmp_path).search_restaurants()) == 3
+
+
+def test_filter_by_cuisine(tmp_path):
+    results = make_search_service(tmp_path).search_restaurants(cuisine="italian")
+    assert ids(results) == [1, 3]
+
+
+def test_filter_by_is_open_false(tmp_path):
+    results = make_search_service(tmp_path).search_restaurants(is_open=False)
+    assert ids(results) == [2, 3]
+
+
+def test_search_and_cuisine_combined(tmp_path):
+    results = make_search_service(tmp_path).search_restaurants(search="pizza", cuisine="italian")
+    assert ids(results) == [1]
 
 
 def test_search_endpoint_filters_by_name():
@@ -80,3 +100,8 @@ def test_search_endpoint_no_match():
     response = client.get("/restaurants?search=zzzz")
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_endpoint_rejects_invalid_is_open():
+    response = client.get("/restaurants?is_open=maybe")
+    assert response.status_code == 422
