@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Food Delivery Service</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; max-width: 950px; }
+    section { margin-bottom: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 1.5rem; }
+    .card { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 4px; }
+    .open { color: green; font-weight: bold; }
+    .closed { color: red; font-weight: bold; }
+    .danger { background-color: #d9534f; color: white; border: none; cursor: pointer; }
+    .row { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 280px; }
+    label { display: block; margin-top: 8px; }
+    input, select, button { padding: 6px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Food Delivery Portal</h1>
+
+  <!-- Search & Filter Restaurants -->
+  <section>
+    <h2>1. Discover Restaurants</h2>
+    <input type="text" id="searchInput" placeholder="Search by name..." />
+    <input type="text" id="cuisineInput" placeholder="Filter by cuisine..." />
+    <select id="isOpenFilter">
+      <option value="">All Statuses</option>
+      <option value="true">Open Only</option>
+      <option value="false">Closed Only</option>
+    </select>
+    <button onclick="loadRestaurants()">Filter</button>
+    <button onclick="resetFilters()">Reset</button>
+
+    <div id="restaurantList">Loading restaurants...</div>
+  </section>
+
+  <!-- 2. Restaurant Details, Edit/Delete & Menu Management -->
+  <section id="detailsSection" style="display: none;">
+    <h2>2. Selected Restaurant Details & Menu</h2>
+    <div id="restaurantDetails"></div>
+
+    <!-- Edit Restaurant -->
+    <div id="editRestaurantBox" class="card" style="display: none; background: #f9f9f9;">
+      <h4>Edit Restaurant Details</h4>
+      <form id="editRestaurantForm" onsubmit="handleUpdateRestaurant(event)">
+        <label>Name: <input type="text" id="editRestName" required /></label>
+        <label>Cuisine: <input type="text" id="editRestCuisine" required /></label>
+        <label>Address: <input type="text" id="editRestAddress" required /></label>
+        <label>
+          Status:
+          <select id="editRestIsOpen">
+            <option value="true">Open</option>
+            <option value="false">Closed</option>
+          </select>
+        </label>
+        <button type="submit">Save Changes</button>
+        <button type="button" onclick="toggleEditRestaurantBox(false)">Cancel</button>
+      </form>
+    </div>
+
+    <!-- Menu Section -->
+    <h3>Restaurant Menu</h3>
+    <div>
+      <input type="text" id="menuCategoryFilter" placeholder="Filter by category (e.g., mains, drinks)..." />
+      <button onclick="filterCurrentMenu()">Filter Menu</button>
+      <button onclick="clearMenuFilter()">Show All Items</button>
+    </div>
+    <div id="menuItems" style="margin-top: 10px;">No menu loaded.</div>
+
+    <!-- Menu Item -->
+    <div class="row" style="margin-top: 1rem;">
+      <div class="col card">
+        <h4>Add Menu Item</h4>
+        <form id="addMenuItemForm" onsubmit="handleAddMenuItem(event)">
+          <label>Item Name: <input type="text" id="menuItemName" required /></label>
+          <label>Category: <input type="text" id="menuItemCategory" placeholder="e.g., mains, drinks" required /></label>
+          <label>Price ($): <input type="number" id="menuItemPrice" step="0.01" min="0.01" required /></label>
+          <label>Description: <input type="text" id="menuItemDesc" required /></label>
+          <label>
+            Available:
+            <select id="menuItemAvailable">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <button type="submit">Add Item</button>
+        </form>
+        <p id="menuAddMessage"></p>
+      </div>
+
+      <div class="col card" id="editMenuItemCard" style="display: none;">
+        <h4>Update Menu Item (<span id="editMenuItemIdDisplay"></span>)</h4>
+        <form id="editMenuItemForm" onsubmit="handleUpdateMenuItem(event)">
+          <input type="hidden" id="editMenuItemId" />
+          <label>Item Name: <input type="text" id="editMenuItemName" required /></label>
+          <label>Category: <input type="text" id="editMenuItemCategory" required /></label>
+          <label>Price ($): <input type="number" id="editMenuItemPrice" step="0.01" min="0.01" required /></label>
+          <label>Description: <input type="text" id="editMenuItemDesc" required /></label>
+          <label>
+            Available:
+            <select id="editMenuItemAvailable">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <button type="submit">Update Item</button>
+          <button type="button" onclick="closeEditMenuItem()">Cancel</button>
+        </form>
+        <p id="menuEditMessage"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Create Restaurant -->
+  <section>
+    <h2>3. Add New Restaurant</h2>
+    <form id="createRestaurantForm" onsubmit="handleCreateRestaurant(event)">
+      <label>Name: <input type="text" id="newName" required /></label>
+      <label>Cuisine: <input type="text" id="newCuisine" required /></label>
+      <label>Address: <input type="text" id="newAddress" required /></label>
+      <label>
+        Status:
+        <select id="newIsOpen">
+          <option value="true">Open</option>
+          <option value="false">Closed</option>
+        </select>
+      </label>
+      <button type="submit">Create Restaurant</button>
+    </form>
+    <p id="createMessage"></p>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>
