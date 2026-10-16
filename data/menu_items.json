@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "restaurant_id": 1,
+    "name": "Tonkotsu Ramen",
+    "description": "Pork broth, noodles, and egg.",
+    "price": 14.5,
+    "category": "mains",
+    "is_available": true
+  },
+  {
+    "id": 2,
+    "restaurant_id": 1,
+    "name": "Green Tea",
+    "description": "Freshly brewed green tea.",
+    "price": 3.0,
+    "category": "drinks",
+    "is_available": true
+  },
+  {
+    "id": 3,
+    "restaurant_id": 1,
+    "name": "Mochi",
+    "description": "Sweet rice cakes.",
+    "price": 4.5,
+    "category": "desserts",
+    "is_available": false
+  },
+  {
+    "id": 4,
+    "restaurant_id": 2,
+    "name": "Margherita Pizza",
+    "description": "Tomato, mozzarella, and basil.",
+    "price": 16.0,
+    "category": "mains",
+    "is_available": true
+  },
+  {
+    "id": 5,
+    "restaurant_id": 2,
+    "name": "Tiramisu",
+    "description": "Coffee and mascarpone dessert.",
+    "price": 6.5,
+    "category": "desserts",
+    "is_available": true
+  },
+  {
+    "id": 6,
+    "restaurant_id": 3,
+    "name": "Vegetable Chow Mein",
+    "description": "Stir-fried noodles with vegetables.",
+    "price": 12.0,
+    "category": "mains",
+    "is_available": true
+  },
+  {
+    "name": "Mochi",
+    "description": "Sweet rice cakes",
+    "price": 4.5,
+    "category": "desserts",
+    "is_available": true,
+    "restaurant_id": 1,
+    "id": 7
+  }
+]

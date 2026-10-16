@@ -31,3 +31,23 @@ class RestaurantService:
 
 
 
+    def search_restaurants(
+        self,
+        search: str | None = None,
+        cuisine: str | None = None,
+        is_open: bool | None = None,
+    ) -> list[Restaurant]:
+        restaurants = self.list_restaurants()
+
+        if search is not None and search.strip() != "":
+            term = search.strip().casefold()
+            restaurants = [r for r in restaurants if term in r.name.casefold()]
+
+        if cuisine is not None and cuisine.strip() != "":
+            wanted = cuisine.strip().casefold()
+            restaurants = [r for r in restaurants if r.cuisine.casefold() == wanted]
+
+        if is_open is not None:
+            restaurants = [r for r in restaurants if r.is_open == is_open]
+
+        return restaurants
