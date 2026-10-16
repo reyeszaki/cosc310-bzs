@@ -11,8 +11,8 @@ service = RestaurantService(repo)
 
 
 @router.get("", response_model=list[Restaurant])
-def get_restaurants() -> list[Restaurant]:
-    return service.list_restaurants()
+def get_restaurants(search: str | None = None) -> list[Restaurant]:
+    return service.search_restaurants(search)
 
 
 @router.get("/{restaurant_id}", response_model=Restaurant)

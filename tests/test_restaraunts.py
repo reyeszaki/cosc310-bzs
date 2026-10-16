@@ -40,16 +40,43 @@ def test_invalid_endpoint_failure_case():
     response = client.get("/api/nonexistent-restaurant-route")
     assert response.status_code == 404
 
+SEARCH_SEED = [
+    {"id": 1, "name": "Pizza Place", "cuisine": "Italian", "address": "456 Pizza Ave", "is_open": True},
+    {"id": 2, "name": "Burger King", "cuisine": "American", "address": "1 Pizza St", "is_open": False},
+]
+
+def make_search_service(tmp_path):
+    test_file = tmp_path / "test_restaurants.json"
+    test_file.write_text(json.dumps(SEARCH_SEED))
+    repo = RestaurantRepository(data_path=test_file)
+    return RestaurantService(repo)
+
+
 def test_restaurant_search(tmp_path):
-    test_file=tmp_path / "test_restaurants.json"
-    repo= RestaurantRepository(data_path=str(tmp_path / "test_restaurants.json"))
-    fake_data = [
-        {"id": 1, "name": "Pizza Place", "cuisine": "Italian", "address": "456 Pizza Ave", "is_open": True},
-        {"id": 2, "name": "Burger King", "cuisine": "American", "address": "789 Burger Blvd", "is_open": False}
-    ]
-    test_file.write_text(json.dumps(fake_data))
-    service = RestaurantService(repo)
-    results = service.search_restaurants("Pizza")
-    assert isinstance(results, list)
+    results = make_search_service(tmp_path).search_restaurants("pizza")
     assert len(results) == 1
     assert results[0].name == "Pizza Place"
+
+
+def test_search_no_match(tmp_path):
+    assert make_search_service(tmp_path).search_restaurants("sushi") == []
+
+
+def test_search_blank_returns_all(tmp_path):
+    assert len(make_search_service(tmp_path).search_restaurants("   ")) == 2
+
+
+def test_search_no_argument_returns_all(tmp_path):
+    assert len(make_search_service(tmp_path).search_restaurants()) == 2
+
+
+def test_search_endpoint_filters_by_name():
+    response = client.get("/restaurants?search=ramen")
+    assert response.status_code == 200
+    assert all("ramen" in item["name"].lower() for item in response.json())
+
+
+def test_search_endpoint_no_match():
+    response = client.get("/restaurants?search=zzzz")
+    assert response.status_code == 200
+    assert response.json() == []
