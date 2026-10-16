@@ -16,10 +16,10 @@ class RestaurantService:
             raise LookupError(f"Restaurant with id {restaurant_id} not found")
         return Restaurant(**raw_item)
 
-
     def create_restaurant(self, restaurant: CreateRestaurant) -> Restaurant:
         saved_restaurant = self.repository.create(restaurant.model_dump())
         return Restaurant(**saved_restaurant)
+
     def update_restaurant(self, restaurant_id: int, restaurant: UpdateRestaurant) -> Restaurant:
         saved_restaurant = self.repository.update(restaurant_id, restaurant.model_dump(),)
 
@@ -34,6 +34,7 @@ class RestaurantService:
         if deleted is None:
             raise LookupError(f"Restaurant with id {restaurant_id} not found")
         return Restaurant(**deleted)
+
 
     def search_restaurants(
         self,
