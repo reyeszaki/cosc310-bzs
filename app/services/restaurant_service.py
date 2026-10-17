@@ -1,10 +1,12 @@
 from app.repository.restaurant_repo import RestaurantRepository
+from app.repository.menu_repo import MenuRepository
 from app.schema.restaurant_schema import Restaurant, CreateRestaurant, UpdateRestaurant
 
 
 class RestaurantService:
-    def __init__(self, repository: RestaurantRepository) -> None:
+    def __init__(self, repository: RestaurantRepository, menus: MenuRepository | None = None) -> None:
         self.repository = repository
+        self.menus = menus if menus is not None else MenuRepository()
 
     def list_restaurants(self) -> list[Restaurant]:
         raw_items = self.repository.get_all()
@@ -24,16 +26,21 @@ class RestaurantService:
         saved_restaurant = self.repository.update(restaurant_id, restaurant.model_dump(),)
 
         if saved_restaurant is None:
-            raise LookupError(f"Restaurant doesnt match with id {restaurant_id} not found")
+            raise LookupError(f"Restaurant with id {restaurant_id} not found")
 
         return Restaurant(**saved_restaurant)
 
     def delete_restaurant(self, restaurant_id: int) -> Restaurant:
-        deleted = self.repository.delete(restaurant_id)
+        with self.repository._lock:
+            # Keep menu ownership intact; IDs may be reused after deletion.
+            self.get_restaurant(restaurant_id)
+            if self.menus.get_by_restaurant(restaurant_id):
+                raise ValueError("Remove this restaurant's menu items before deleting the restaurant")
+            deleted = self.repository.delete(restaurant_id)
 
-        if deleted is None:
-            raise LookupError(f"Restaurant with id {restaurant_id} not found")
-        return Restaurant(**deleted)
+            if deleted is None:
+                raise LookupError(f"Restaurant with id {restaurant_id} not found")
+            return Restaurant(**deleted)
 
 
     def search_restaurants(

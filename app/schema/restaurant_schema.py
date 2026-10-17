@@ -1,23 +1,22 @@
-from pydantic import BaseModel, Field
+from typing import Annotated
 
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-class Restaurant(BaseModel):
-    id: int
-    name: str = Field(min_length=1)
-    cuisine: str
-    address: str
-    is_open: bool
+Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+
 
 class CreateRestaurant(BaseModel):
-    name: str = Field(min_length=1)
-    cuisine: str = Field(min_length=1)
-    address: str = Field(min_length=1)
+    model_config = ConfigDict(extra="forbid")
+
+    name: Text
+    cuisine: Text
+    address: Text
     is_open: bool
 
-class UpdateRestaurant(BaseModel):
-    name: str = Field(min_length=1)
-    cuisine: str = Field(min_length=1)
-    address: str = Field(min_length=1)
-    is_open: bool
-    
 
+class Restaurant(CreateRestaurant):
+    id: int = Field(gt=0)
+
+
+class UpdateRestaurant(CreateRestaurant):
+    """PUT requires all editable fields, just like creation."""

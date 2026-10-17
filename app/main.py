@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI, status
 from fastapi.staticfiles import StaticFiles
 
@@ -23,4 +25,4 @@ app.include_router(menu_routers.router)
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/", StaticFiles(directory=Path(__file__).resolve().parents[1] / "static", html=True), name="static")

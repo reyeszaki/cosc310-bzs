@@ -1,3 +1,30 @@
+// All requests use the same-origin API served by FastAPI.
+async function apiRequest(url, options) {
+  document.getElementById("appMessage").innerText = "";
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    let detail = `Request failed (${response.status})`;
+    try {
+      const body = await response.json();
+      detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail || body);
+    } catch (_) {
+      // A server/proxy error may not contain JSON.
+    }
+    throw new Error(detail);
+  }
+  return response;
+}
+
+function showError(error) {
+  document.getElementById("appMessage").innerText = error.message || "Request failed";
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
 let currentRestaurant = null;
 
 async function loadRestaurants() {
@@ -13,7 +40,7 @@ async function loadRestaurants() {
   const url = `/restaurants${params.toString() ? "?" + params.toString() : ""}`;
 
   try {
-    const res = await fetch(url);
+    const res = await apiRequest(url);
     if (!res.ok) throw new Error("Failed to fetch restaurants");
     const data = await res.json();
 
@@ -25,8 +52,8 @@ async function loadRestaurants() {
 
     listDiv.innerHTML = data.map(r => `
       <div class="card">
-        <h3>${r.name} (${r.cuisine})</h3>
-        <p>Address: ${r.address}</p>
+        <h3>${escapeHtml(r.name)} (${escapeHtml(r.cuisine)})</h3>
+        <p>Address: ${escapeHtml(r.address)}</p>
         <p>Status: <span class="${r.is_open ? 'open' : 'closed'}">${r.is_open ? 'Open' : 'Closed'}</span></p>
         <button onclick="viewDetails(${r.id})">View Details & Menu</button>
         <button class="danger" onclick="deleteRestaurant(${r.id})">Delete</button>
@@ -47,19 +74,23 @@ function resetFilters() {
 async function viewDetails(restaurantId) {
   const detailsSec = document.getElementById("detailsSection");
   detailsSec.style.display = "block";
+  currentRestaurant = null;
+  document.getElementById("restaurantDetails").innerText = "Loading restaurant...";
+  document.getElementById("menuItems").innerText = "";
+  document.getElementById("menuCategoryFilter").value = "";
   toggleEditRestaurantBox(false);
   closeEditMenuItem();
 
   try {
-    const resRest = await fetch(`/restaurants/${restaurantId}`);
+    const resRest = await apiRequest(`/restaurants/${restaurantId}`);
     if (!resRest.ok) throw new Error("Could not load restaurant details");
     const restaurant = await resRest.json();
     currentRestaurant = restaurant;
 
     document.getElementById("restaurantDetails").innerHTML = `
       <div class="card">
-        <h3>${restaurant.name} (ID: ${restaurant.id})</h3>
-        <p><strong>Cuisine:</strong> ${restaurant.cuisine} | <strong>Address:</strong> ${restaurant.address}</p>
+        <h3>${escapeHtml(restaurant.name)} (ID: ${restaurant.id})</h3>
+        <p><strong>Cuisine:</strong> ${escapeHtml(restaurant.cuisine)} | <strong>Address:</strong> ${escapeHtml(restaurant.address)}</p>
         <p><strong>Status:</strong> <span class="${restaurant.is_open ? 'open' : 'closed'}">${restaurant.is_open ? 'Open' : 'Closed'}</span></p>
         <button onclick="toggleRestaurantStatus()">Set ${restaurant.is_open ? 'Closed' : 'Open'}</button>
         <button onclick="openEditRestaurantBox()">Edit Info</button>
@@ -69,7 +100,8 @@ async function viewDetails(restaurantId) {
 
     await loadMenu(restaurantId);
   } catch (err) {
-    console.error(err);
+    showError(err);
+    document.getElementById("restaurantDetails").innerText = err.message;
   }
 }
 
@@ -83,7 +115,7 @@ async function handleCreateRestaurant(event) {
   };
 
   try {
-    const res = await fetch("/restaurants", {
+    const res = await apiRequest("/restaurants", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -101,6 +133,7 @@ async function handleCreateRestaurant(event) {
       msg.innerText = "Error: " + JSON.stringify(err.detail || err);
     }
   } catch (err) {
+    document.getElementById("createMessage").style.color = "red";
     document.getElementById("createMessage").innerText = err.message;
   }
 }
@@ -119,59 +152,71 @@ function openEditRestaurantBox() {
 }
 
 async function handleUpdateRestaurant(event) {
-  event.preventDefault();
-  if (!currentRestaurant) return;
+  try {
+    event.preventDefault();
+    if (!currentRestaurant) return;
 
-  const payload = {
-    name: document.getElementById("editRestName").value.trim(),
-    cuisine: document.getElementById("editRestCuisine").value.trim(),
-    address: document.getElementById("editRestAddress").value.trim(),
-    is_open: document.getElementById("editRestIsOpen").value === "true"
-  };
+    const payload = {
+      name: document.getElementById("editRestName").value.trim(),
+      cuisine: document.getElementById("editRestCuisine").value.trim(),
+      address: document.getElementById("editRestAddress").value.trim(),
+      is_open: document.getElementById("editRestIsOpen").value === "true"
+    };
 
-  const res = await fetch(`/restaurants/${currentRestaurant.id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    const res = await apiRequest(`/restaurants/${currentRestaurant.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (res.ok) {
-    toggleEditRestaurantBox(false);
-    await viewDetails(currentRestaurant.id);
-    await loadRestaurants();
+    if (res.ok) {
+      toggleEditRestaurantBox(false);
+      await viewDetails(currentRestaurant.id);
+      await loadRestaurants();
+    }
+  } catch (err) {
+    showError(err);
   }
 }
 
 async function toggleRestaurantStatus() {
-  if (!currentRestaurant) return;
-  const payload = {
-    name: currentRestaurant.name,
-    cuisine: currentRestaurant.cuisine,
-    address: currentRestaurant.address,
-    is_open: !currentRestaurant.is_open
-  };
+  try {
+    if (!currentRestaurant) return;
+    const payload = {
+      name: currentRestaurant.name,
+      cuisine: currentRestaurant.cuisine,
+      address: currentRestaurant.address,
+      is_open: !currentRestaurant.is_open
+    };
 
-  await fetch(`/restaurants/${currentRestaurant.id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    await apiRequest(`/restaurants/${currentRestaurant.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  await viewDetails(currentRestaurant.id);
-  await loadRestaurants();
+    await viewDetails(currentRestaurant.id);
+    await loadRestaurants();
+  } catch (err) {
+    showError(err);
+  }
 }
 
 async function deleteRestaurant(restaurantId) {
-  const res = await fetch(`/restaurants/${restaurantId}`, {
-    method: "DELETE"
-  });
+  try {
+    const res = await apiRequest(`/restaurants/${restaurantId}`, {
+      method: "DELETE"
+    });
 
-  if (res.ok) {
-    if (currentRestaurant && currentRestaurant.id === restaurantId) {
-      document.getElementById("detailsSection").style.display = "none";
-      currentRestaurant = null;
+    if (res.ok) {
+      if (currentRestaurant && currentRestaurant.id === restaurantId) {
+        document.getElementById("detailsSection").style.display = "none";
+        currentRestaurant = null;
+      }
+      loadRestaurants();
     }
-    loadRestaurants();
+  } catch (err) {
+    showError(err);
   }
 }
 
@@ -183,7 +228,7 @@ async function loadMenu(restaurantId, category = "") {
   const url = `/restaurants/${restaurantId}/menu${params.toString() ? "?" + params.toString() : ""}`;
 
   try {
-    const resMenu = await fetch(url);
+    const resMenu = await apiRequest(url);
     if (!resMenu.ok) {
       menuDiv.innerHTML = "<p>No menu found for this restaurant.</p>";
       return;
@@ -198,11 +243,11 @@ async function loadMenu(restaurantId, category = "") {
     }
 
     menuDiv.innerHTML = items.map(item => {
-      const itemJson = encodeURIComponent(JSON.stringify(item));
+      const itemJson = encodeURIComponent(JSON.stringify(item)).replace(/'/g, "%27");
       return `
         <div class="card">
-          <strong>${item.name}</strong> <em>(${item.category})</em> - $${Number(item.price).toFixed(2)}
-          <p>${item.description}</p>
+          <strong>${escapeHtml(item.name)}</strong> <em>(${escapeHtml(item.category)})</em> - $${Number(item.price).toFixed(2)}
+          <p>${escapeHtml(item.description)}</p>
           <p>Available: <span class="${item.is_available ? 'open' : 'closed'}">${item.is_available ? 'Yes' : 'No'}</span></p>
           <button onclick="openEditMenuItem('${itemJson}')">Edit Item</button>
           <button class="danger" onclick="deleteMenuItem(${item.id})">Delete Item</button>
@@ -210,7 +255,8 @@ async function loadMenu(restaurantId, category = "") {
       `;
     }).join("");
   } catch (err) {
-    menuDiv.innerHTML = "<p>Error loading menu.</p>";
+    menuDiv.innerText = err.message;
+    showError(err);
   }
 }
 
@@ -227,35 +273,39 @@ function clearMenuFilter() {
 }
 
 async function handleAddMenuItem(event) {
-  event.preventDefault();
-  if (!currentRestaurant) return;
+  try {
+    event.preventDefault();
+    if (!currentRestaurant) return;
 
-  // Strictly match MenuItemCreate schema (extra="forbid")
-  const payload = {
-    name: document.getElementById("menuItemName").value.trim(),
-    description: document.getElementById("menuItemDesc").value.trim(),
-    price: parseFloat(document.getElementById("menuItemPrice").value),
-    category: document.getElementById("menuItemCategory").value.trim(),
-    is_available: document.getElementById("menuItemAvailable").value === "true"
-  };
+    // Strictly match MenuItemCreate schema (extra="forbid")
+    const payload = {
+      name: document.getElementById("menuItemName").value.trim(),
+      description: document.getElementById("menuItemDesc").value.trim(),
+      price: parseFloat(document.getElementById("menuItemPrice").value),
+      category: document.getElementById("menuItemCategory").value.trim(),
+      is_available: document.getElementById("menuItemAvailable").value === "true"
+    };
 
-  const msg = document.getElementById("menuAddMessage");
+    const msg = document.getElementById("menuAddMessage");
 
-  const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    const res = await apiRequest(`/restaurants/${currentRestaurant.id}/menu/items`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (res.ok) {
-    msg.style.color = "green";
-    msg.innerText = "Menu item added!";
-    document.getElementById("addMenuItemForm").reset();
-    loadMenu(currentRestaurant.id);
-  } else {
-    const err = await res.json();
-    msg.style.color = "red";
-    msg.innerText = "Error: " + JSON.stringify(err.detail || err);
+    if (res.ok) {
+      msg.style.color = "green";
+      msg.innerText = "Menu item added!";
+      document.getElementById("addMenuItemForm").reset();
+      loadMenu(currentRestaurant.id, document.getElementById("menuCategoryFilter").value.trim());
+    } else {
+      const err = await res.json();
+      msg.style.color = "red";
+      msg.innerText = "Error: " + JSON.stringify(err.detail || err);
+    }
+  } catch (err) {
+    showError(err);
   }
 }
 
@@ -278,46 +328,54 @@ function closeEditMenuItem() {
 }
 
 async function handleUpdateMenuItem(event) {
-  event.preventDefault();
-  if (!currentRestaurant) return;
+  try {
+    event.preventDefault();
+    if (!currentRestaurant) return;
 
-  const itemId = document.getElementById("editMenuItemId").value;
-  const payload = {
-    name: document.getElementById("editMenuItemName").value.trim(),
-    description: document.getElementById("editMenuItemDesc").value.trim(),
-    price: parseFloat(document.getElementById("editMenuItemPrice").value),
-    category: document.getElementById("editMenuItemCategory").value.trim(),
-    is_available: document.getElementById("editMenuItemAvailable").value === "true"
-  };
+    const itemId = document.getElementById("editMenuItemId").value;
+    const payload = {
+      name: document.getElementById("editMenuItemName").value.trim(),
+      description: document.getElementById("editMenuItemDesc").value.trim(),
+      price: parseFloat(document.getElementById("editMenuItemPrice").value),
+      category: document.getElementById("editMenuItemCategory").value.trim(),
+      is_available: document.getElementById("editMenuItemAvailable").value === "true"
+    };
 
-  const msg = document.getElementById("menuEditMessage");
+    const msg = document.getElementById("menuEditMessage");
 
-  // Part C uses PATCH for updating menu items
-  const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    // Part C uses PATCH for updating menu items
+    const res = await apiRequest(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (res.ok) {
-    closeEditMenuItem();
-    loadMenu(currentRestaurant.id);
-  } else {
-    const err = await res.json();
-    msg.style.color = "red";
-    msg.innerText = "Error: " + JSON.stringify(err.detail || err);
+    if (res.ok) {
+      closeEditMenuItem();
+      loadMenu(currentRestaurant.id, document.getElementById("menuCategoryFilter").value.trim());
+    } else {
+      const err = await res.json();
+      msg.style.color = "red";
+      msg.innerText = "Error: " + JSON.stringify(err.detail || err);
+    }
+  } catch (err) {
+    showError(err);
   }
 }
 
 async function deleteMenuItem(itemId) {
-  if (!currentRestaurant) return;
+  try {
+    if (!currentRestaurant) return;
 
-  const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
-    method: "DELETE"
-  });
+    const res = await apiRequest(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
+      method: "DELETE"
+    });
 
-  if (res.ok) {
-    loadMenu(currentRestaurant.id);
+    if (res.ok) {
+      loadMenu(currentRestaurant.id, document.getElementById("menuCategoryFilter").value.trim());
+    }
+  } catch (err) {
+    showError(err);
   }
 }
 
