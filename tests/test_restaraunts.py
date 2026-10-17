@@ -52,6 +52,88 @@ def test_delete_restauraunt_invalid_id(tmp_path, monkeypatch):
     response = client.delete("/restaurants/99")
     assert response.status_code == 404
 
+def test_delete_restauraunt_valid_id(tmp_path, monkeypatch):
+    from app.api.routers import restaurant_routers
+
+    test_file = tmp_path / "restaurants.json"
+    current = [{
+        "id": 99,
+        "name": "Fake Burger",
+        "cuisine": "Italian",
+        "address": "123 Fake St",
+        "is_open": True,
+    }]
+    test_file.write_text(json.dumps(current))
+    service = RestaurantService(RestaurantRepository(data_path=test_file))
+    monkeypatch.setattr(restaurant_routers, "service", service)
+    response = client.delete("/restaurants/99")
+    assert response.status_code == 200
+    assert response.json() == current[0]
+    assert json.loads(test_file.read_text()) == []
+
+
+def test_update_restaurant_invalid_id(tmp_path, monkeypatch):
+    from app.api.routers import restaurant_routers
+    test_file = tmp_path / "restaurants.json"
+    test_file.write_text("[]")
+    service = RestaurantService(RestaurantRepository(data_path=test_file))
+    monkeypatch.setattr(restaurant_routers, "service", service)
+    response = (client.put(
+        "/restaurants/99",
+        json={
+            "name": "Fake Burger",
+            "cuisine": "Italian",
+            "address": "123 Fake St",
+            "is_open": True,
+        },))
+    assert response.status_code == 404
+
+def test_update_restaurant_success(tmp_path, monkeypatch):
+    from app.api.routers import restaurant_routers
+    test_file = tmp_path / "restaurants.json"
+    current = [{
+        "id": 99,
+        "name": "Fake Burger",
+        "cuisine": "Italian",
+        "address": "123 Fake St",
+        "is_open": True,
+    }]
+    test_file.write_text(json.dumps(current))
+    service = RestaurantService(RestaurantRepository(data_path=test_file))
+    monkeypatch.setattr(restaurant_routers, "service", service)
+
+    updated = {
+        "name": "Real Burger",
+        "cuisine": "Italian",
+        "address": "123 Fake St",
+        "is_open": True,
+    }
+    response = client.put("/restaurants/99", json=updated)
+    expected = {**updated, "id":99}
+    assert response.status_code == 200
+    assert response.json() == expected
+    assert json.loads(test_file.read_text()) == [expected]
+
+def test_create_restaurant_success(tmp_path, monkeypatch):
+    from app.api.routers import restaurant_routers
+    test_file = tmp_path / "restaurants.json"
+    test_file.write_text("[]")
+    service = RestaurantService(RestaurantRepository(data_path=test_file))
+    monkeypatch.setattr(restaurant_routers, "service", service)
+    restaurant={
+        "name": "Pizza Place",
+        "cuisine": "Italian",
+        "address": "2949 Pizza Ave",
+        "is_open": True,
+    }
+    response = client.post("/restaurants", json=restaurant)
+    expected = {**restaurant, "id": 1}
+    assert response.status_code == 201
+    assert response.json() == expected
+    assert json.loads(test_file.read_text()) == [expected]
+
+
+
 
 def make_search_service(tmp_path):
     test_file = tmp_path / "test_restaurants.json"
