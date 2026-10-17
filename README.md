@@ -128,7 +128,7 @@ The dependency-free Node tests cover apostrophes in menu Edit handlers, literal 
 
 [GitHub Actions](.github/workflows/pytest.yml) runs the Python suite on Python 3.14 and frontend regression tests on Node 22 for pushes to `main` and pull requests targeting `main`.
 
-Verification on 2026-10-16: 70 Python tests and 5 frontend regression tests passed. A separate headless Chrome check exercised browser create/search/details/edit/menu/category/error flows and confirmed those browser writes survived a server process restart. The baseline main commit's [Actions run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38990208335) and its test step succeeded. Local changes have not been pushed or run on GitHub Actions. The existing Starlette/httpx TestClient deprecation warning remains. A fresh dependency installation and other browsers were not tested in this review.
+Verification on 2026-10-16: 70 Python tests and 5 frontend regression tests passed. A separate headless Chrome check exercised browser create/search/details/edit/menu/category/error flows and confirmed those browser writes survived a server process restart. The baseline main commit's [Actions run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38990208335) and its test step succeeded. [PR #37](https://github.com/reyeszaki/cosc310-bzs/pull/37) was subsequently opened, and [its Actions run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38991463232) passed both Python and frontend tests. The existing Starlette/httpx TestClient deprecation warning remains. A fresh dependency installation and other browsers were not tested in this review.
 
 ## Manual end-to-end walkthrough
 
@@ -160,3 +160,18 @@ These steps write to JSON. Use a disposable project copy if you want to keep the
 | `scrum/team-agreement.md` | Team agreement |
 
 The [M1 integration review](docs/m1-integration-review.md) records fixes, executed checks, and remaining limitations. [AI assistance provenance](docs/PROVENANCE.md) records tooling contributions. The earlier M0 submission tag `foundation-gate` remains historical; this README describes M1. Team review and submission procedures still apply.
+
+
+## M1 submission
+
+One team member submits a PDF to the Canvas group assignment containing:
+
+1. Repository URL, with teaching-team access verified before the deadline.
+2. GitHub Project Board URL, with the required workflow columns and user stories/issues.
+3. URL of the immutable tag or release named `m1-vertical-slice`.
+4. The full commit SHA referenced by that tag.
+5. Contribution percentages for each team member, totaling 100% and agreed by everyone.
+
+Before selecting the final commit, complete teammate review, integrate approved changes, confirm CI, and include actual scrum meeting notes under `scrum/` using the course sprint-planning template. All contributors must confirm the shared `docs/PROVENANCE.md` uses the required course fields and labels for their AI-influenced artifacts. A progress note alone is not a replacement for meeting records.
+
+Create the submission tag only after choosing the final reviewed version. Do not move or overwrite the submitted tag after the deadline. If a revision is required, the assignment specifies a new tag named `milestone1-r1`. The tag identifies the assessed version; later work does not alter the original submission.
