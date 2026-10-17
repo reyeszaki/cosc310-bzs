@@ -128,7 +128,7 @@ The dependency-free Node tests cover apostrophes in menu Edit handlers, literal 
 
 [GitHub Actions](.github/workflows/pytest.yml) runs the Python suite on Python 3.14 and frontend regression tests on Node 22 for pushes to `main` and pull requests targeting `main`.
 
-Verification on 2026-10-16: 70 Python tests and 5 frontend regression tests passed. A separate headless Chrome check exercised browser create/search/details/edit/menu/category/error flows and confirmed those browser writes survived a server process restart. The baseline main commit's [Actions run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38990208335) and its test step succeeded. [PR #37](https://github.com/reyeszaki/cosc310-bzs/pull/37) was subsequently opened, and [its Actions run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38991463232) passed both Python and frontend tests. The existing Starlette/httpx TestClient deprecation warning remains. A fresh dependency installation and other browsers were not tested in this review.
+Latest checks: 70 Python tests and 5 frontend tests passed. A separate Chrome check covered the full restaurant/menu flow and confirmed that browser changes stayed saved after a server restart. [PR #37's CI run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38991584461) also passed both test suites. The existing TestClient deprecation warning remains. Other browsers were not tested.
 
 ## Manual end-to-end walkthrough
 
@@ -156,10 +156,10 @@ These steps write to JSON. Use a disposable project copy if you want to keep the
 | `data/` | Fictional seed restaurants and menu items |
 | `tests/` | Backend integration and frontend regression tests |
 | `.github/workflows/pytest.yml` | Continuous integration |
-| `docs/` | API handoffs, review results, AI assistance provenance |
+| `docs/` | API documentation and AI provenance |
 | `scrum/team-agreement.md` | Team agreement |
 
-The [M1 integration review](docs/m1-integration-review.md) records fixes, executed checks, and remaining limitations. [AI assistance provenance](docs/PROVENANCE.md) records tooling contributions. The earlier M0 submission tag `foundation-gate` remains historical; this README describes M1. Team review and submission procedures still apply.
+See [PROVENANCE.md](docs/PROVENANCE.md) for how AI was used. The earlier `foundation-gate` tag is for M0; this README describes M1.
 
 
 ## M1 submission
