@@ -33,6 +33,21 @@
 - **Validation:** The documentation was checked against the restored routes, frontend, tests, and workflow. The original suite has 49 tests. Earlier 70-test and browser results were for the removed implementation and do not establish that the restored code passes those checks.
 - **PR:** [#37](https://github.com/reyeszaki/cosc310-bzs/pull/37)
 
+## Part B create, update, delete restaurant - 2026-10-15
+
+**Student(s):** Keyan Sharifpour
+
+Implemented the handling for creating, updating, deleting and returning restaurant
+data implementing the GET, POST, PUT, and DELETE requests into functions to process new
+and existing data, following through the data flow,
+user --> route --> service --> repository --> JSON storage.
+Several pytest tests were made to check for errors and success,
+based on the data being inputted to fetch and create a restaurant.
+Code for the functions and the tests were generated and assisted using both PyCharms code-completion suggestion
+aswell as Codex.
+All code has been reviewed and tested via FastPointAPI endpoint and all tests have passed
+being tested on the local machine
+
 ## Team contributions
 
 Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
