@@ -48,6 +48,15 @@ aswell as Codex.
 All code has been reviewed and tested via FastPointAPI endpoint and all tests have passed
 being tested on the local machine
 
+- **Student(s):** Shawn Goh
+- **Artifact:** static/index.html, static/app.js, app/main.py, .github/workflows/pytest.yml, and docs/restaurant-api.md
+- **Label:** AI-GENERATED
+- **AI tool:** Google Gemini
+- **Purpose:** Build frontend user portal, configure static file mounting, set up the GitHub Actions CI workflow, and write the restaurant API documentation.
+- **Influence:** Used and adapted the generated HTML/JS client code, CI configuration YAML, FastAPI static file mounting, and API documentation.
+- **Validation:** Tested the web server locally using Uvicorn, verified frontend-to-backend API communication across all routes, confirmed local pytest suite execution, and verified green CI builds on GitHub Actions. All code is read and reviewed before use.
+- **PR:** #34
+
 ## Team contributions
 
 Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
