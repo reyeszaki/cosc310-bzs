@@ -1,23 +1,38 @@
-# Provenance
+# AI Use and Provenance
 
-## Part C menu implementation - 2026-10-12
+## M0 foundation
 
-Inputs: live GitHub issue descriptions for #18, #19, and #20 (read on 2026-10-12, with no separate acceptance-criteria lists); the team's existing FastAPI restaurant foundation; the supplied User stories PDF (US-05, US-06, US-18, and the menu portion of US-20); and the supplied M1 work split.
+- **Student(s):** Jean Zachary Reyes
+- **Artifact:** My contributions to the M0 backend foundation and project setup, identified by the `foundation-gate` tag.
+- **Label:** AI-ASSISTED
+- **AI tool:** Not recorded for M0.
+- **Purpose:** Get guidance while completing my M0 work.
+- **Influence:** I wrote the final work myself and used AI for ideas or guidance. This entry records my AI use, not the other team members' work.
+- **Validation:** M0 included pytest checks for health, restaurant listing, isolated JSON repository reads, and an invalid endpoint. Historical test-run results are not recorded in this entry.
+- **Version:** [`foundation-gate`](https://github.com/reyeszaki/cosc310-bzs/tree/foundation-gate)
 
-Codex generated the menu Pydantic models, router, service, JSON repository, fictional demo items, isolated tests, API handoff documentation, and proposed Decision Receipt, with local pytest verification. No external code snippets or additional libraries were introduced. The existing `.gitignore` change predates this work.
+## M1 menu implementation
 
- Used Codex to help implement my Part C menu functionality. I still need to review the code, make sure I can explain it during the demo, and get a teammate to review it before merging. I have not recorded teammate approval or contribution percentages here.
+- **Student(s):** Jean Zachary Reyes
+- **Artifact:** Menu schemas, routes, service, repository, demo menu data, tests, and API documentation in PR #30.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Help build menu viewing, category filtering, and menu item management.
+- **Influence:** I used generated code, tests, and documentation for menu viewing/filtering, item management, validation, and JSON persistence.
+- **Validation:** The menu work passed 37 tests after its follow-up checks, including separate-process persistence and failed-write protection.
+- **PR:** [#30](https://github.com/reyeszaki/cosc310-bzs/pull/30)
 
+## M1 documentation
 
-## Part C review and refinement - 2026-10-12
+- **Student(s):** Jean Zachary Reyes
+- **Artifact:** `README.md` and `docs/PROVENANCE.md` in PR #37.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Finish the M1 setup, API, testing, and submission documentation.
+- **Influence:** I used AI-generated documentation and then asked for shorter wording. The application code, additional tests, and CI changes initially proposed in this PR were reverted because they changed other members' parts. Only the README and this provenance update remain in the PR.
+- **Validation:** The documentation was checked against the restored routes, frontend, tests, and workflow. The original suite has 49 tests. Earlier 70-test and browser results were for the removed implementation and do not establish that the restored code passes those checks.
+- **PR:** [#37](https://github.com/reyeszaki/cosc310-bzs/pull/37)
 
-Asked Codex to review the existing project structure and the earlier menu implementation before making changes. With Codex's help, I improved the API documentation for parameters, fields, and 404 responses; added comments explaining price validation, partial updates, test dependencies, and safe file writes; corrected the issue mapping; and expanded the tests. The added tests check that changes persist in a separate Python process, stored data stays intact if a file replacement fails, required fields are validated, and the API documentation matches the implementation.
+## Team contributions
 
-Verification: `.venv/bin/python -m pytest -q` passed with 37 tests. The installed Starlette/httpx TestClient emits one existing deprecation warning. `git diff --check` passed. No dependencies were added; no commits, pushes, merges, issue edits, or teammate messages were performed. GitHub Actions and a manual frontend/server demo were not run.
-
-
-## Part C documentation cleanup - 2026-10-14
-
-Asked Codex to simplify the supporting documentation while keeping the menu functionality and tests. Codex shortened `menu-api.md` to the API contract and demo steps, kept the README endpoint overview, and removed the separate, unapproved menu-storage Decision Receipt. The team still needs to select and record its M1 engineering decision. The existing menu progress note was preserved because this checkout has no shared scrum/progress template beyond the team agreement; it can be moved into the team's shared log when available.
-
-No application code or tests were changed. The lock and atomic file replacement were kept to protect against overlapping requests within one process and failed writes. Verification: `.venv/bin/python -m pytest -q` passed with 37 tests; `git diff --check` passed. No dependencies were added, and no commits, pushes, or merges were performed during this cleanup.
+Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
