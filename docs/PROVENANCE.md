@@ -1,6 +1,17 @@
 # AI Use and Provenance
 
-## Menu implementation
+## M0 foundation
+
+- **Student(s):** Jean Zachary Reyes
+- **Artifact:** My contributions to the M0 backend foundation and project setup, identified by the `foundation-gate` tag.
+- **Label:** AI-ASSISTED
+- **AI tool:** Not recorded for M0.
+- **Purpose:** Get guidance while completing my M0 work.
+- **Influence:** I wrote the final work myself and used AI for ideas or guidance. This entry records my AI use, not the other team members' work.
+- **Validation:** M0 included pytest checks for health, restaurant listing, isolated JSON repository reads, and an invalid endpoint. Historical test-run results are not recorded in this entry.
+- **Version:** [`foundation-gate`](https://github.com/reyeszaki/cosc310-bzs/tree/foundation-gate)
+
+## M1 menu implementation
 
 - **Student(s):** Jean Zachary Reyes
 - **Artifact:** Menu schemas, routes, service, repository, demo menu data, tests, and API documentation in PR #30.
