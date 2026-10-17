@@ -165,8 +165,14 @@ These steps write to JSON. Use a disposable project copy if you want to keep the
 | `docs/` | API documentation and AI provenance |
 | `scrum/team-agreement.md` | Team agreement |
 
-See [PROVENANCE.md](docs/PROVENANCE.md) for how AI was used. The earlier `foundation-gate` tag is for M0; this README describes M1.
+See [PROVENANCE.md](docs/PROVENANCE.md) for how AI was used.
 
+
+## M0 submission
+
+Milestone 0 established the backend foundation: the FastAPI application, health endpoint, restaurant list, Pydantic restaurant model, JSON storage, and pytest/GitHub Actions setup.
+
+The M0 submitted version is identified by the [`foundation-gate`](https://github.com/reyeszaki/cosc310-bzs/tree/foundation-gate) tag. This tag preserves the M0 version separately from later milestone work and must not be moved or overwritten.
 
 ## M1 submission
 
