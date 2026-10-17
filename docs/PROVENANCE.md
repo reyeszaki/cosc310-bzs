@@ -37,10 +37,10 @@
 
 - **Student(s):** Keyan Sharifpour
 - **Artifact:** Restaurant GET/POST/PUT/DELETE handling in `app/api/routers/restaurant_routers.py`, `app/services/restaurant_service.py`, `app/repository/restaurant_repo.py`, `app/schema/restaurant_schema.py`, and tests in `tests/test_restaraunts.py`.
-- **Label:** AI-GENERATED
+- **Label:** AI-ASSISTED
 - **AI tool:** OpenAI Codex and PyCharm code-completion suggestions.
 - **Purpose:** Implement returning, creating, updating, and deleting restaurant data, with tests for successful and invalid requests.
-- **Influence:** I used generated code and code-completion suggestions for the functions and tests. The implementation follows user → route → service → repository → JSON storage.
+- **Influence:** I used Codex guidance and PyCharm code-completion suggestions while developing the functions and tests. The implementation follows user → route → service → repository → JSON storage.
 - **Validation:** I reviewed the code, tested the FastAPI endpoints locally, and ran pytest checks for successful requests and invalid input. All tests passed on my local machine.
 - **PRs:** [#32](https://github.com/reyeszaki/cosc310-bzs/pull/32), [#40](https://github.com/reyeszaki/cosc310-bzs/pull/40).
 
