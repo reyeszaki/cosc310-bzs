@@ -57,6 +57,18 @@ being tested on the local machine
 - **Validation:** Tested the web server locally using Uvicorn, verified frontend-to-backend API communication across all routes, confirmed local pytest suite execution, and verified green CI builds on GitHub Actions. All code is read and reviewed before use.
 - **PR:** #34
 
+
+## Part A restaurant list, search and filter - 2026-10-15
+
+- **Student(s):** Beab Girma
+- **Artifact:** `app/services/restaurant_service.py` (`search_restaurants`), `app/api/routers/restaurant_routers.py` (`get_restaurants` query parameters), and the search/filter tests in `tests/test_restaraunts.py`.
+- **Label:** AI-GENERATED
+- **AI tool:** Claude
+- **Purpose:** Add `?search=`, `?cuisine=` and `?is_open=` filtering to `GET /restaurants` (US-17, #29).
+- **Influence:** I used Claude as a coach for the layered design, test-driven development and test isolation. I wrote the first search test and the guard clause; Claude generated the final filter method, the router query-parameter change and the search/filter test block, which I reviewed and adapted.
+- **Validation:** 14 tests passed locally and in GitHub Actions. I manually tested each filter in `/docs`, including `?is_open=maybe` returning 422. I can explain every line.
+- **PR:** [#33](https://github.com/reyeszaki/cosc310-bzs/pull/33)
+
 ## Team contributions
 
 Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
