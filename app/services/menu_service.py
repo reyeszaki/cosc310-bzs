@@ -22,12 +22,10 @@ class MenuService:
         return Menu(restaurant_id=restaurant_id, items=items)
 
     def add_item(self, restaurant_id: int, request: MenuItemCreate) -> MenuItem:
-        # Serialize menu creation with restaurant deletion to preserve ownership.
-        with self.restaurants._lock:
-            self._require_restaurant(restaurant_id)
-            fields = request.model_dump(mode="json")
-            fields["restaurant_id"] = restaurant_id
-            return MenuItem(**self.repository.add(fields))
+        self._require_restaurant(restaurant_id)
+        fields = request.model_dump(mode="json")
+        fields["restaurant_id"] = restaurant_id
+        return MenuItem(**self.repository.add(fields))
 
     def update_item(self, restaurant_id: int, item_id: int, request: MenuItemUpdate) -> MenuItem:
         self._require_restaurant(restaurant_id)

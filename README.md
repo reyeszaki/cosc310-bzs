@@ -9,7 +9,7 @@ Team BZS's COSC 310 Milestone 1 restaurant and menu application. A browser front
 - Create, edit, open/close, and delete restaurants.
 - Add, edit, and delete menu items; change price, category, and availability.
 - Filter menus by category, including empty results and unavailable items.
-- Validate requests and display API/network errors in the frontend.
+- Validate requests through the API.
 - Preserve successful changes across application restarts.
 
 Authentication, accounts, carts, orders, payments, and delivery tracking are outside this slice.
@@ -18,7 +18,7 @@ Authentication, accounts, carts, orders, payments, and delivery tracking are out
 
 - Python 3.14 (verified locally with 3.14.0).
 - Git and the Python packages pinned in `requirements.txt`.
-- A current browser. Node.js 22 or newer is needed only for frontend regression tests; no npm packages are required for those tests.
+- A current browser.
 
 ```bash
 git clone https://github.com/reyeszaki/cosc310-bzs.git
@@ -71,13 +71,13 @@ Keep the terminal running; press Ctrl+C to stop. The frontend uses relative API 
 | POST | `/restaurants` | 201: created restaurant |
 | GET | `/restaurants/{restaurant_id}` | 200: restaurant details |
 | PUT | `/restaurants/{restaurant_id}` | 200: updated restaurant; all editable fields required |
-| DELETE | `/restaurants/{restaurant_id}` | 200: deleted restaurant; 409 while it has menu items |
+| DELETE | `/restaurants/{restaurant_id}` | 200: deleted restaurant |
 | GET | `/restaurants/{restaurant_id}/menu` | 200: `{"restaurant_id":1,"items":[...]}`; optional `category` |
 | POST | `/restaurants/{restaurant_id}/menu/items` | 201: created menu item |
 | PATCH | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 200: updated item; supplied fields only |
 | DELETE | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 204: empty response |
 
-Restaurant POST/PUT bodies require `name`, `cuisine`, `address`, and `is_open`. IDs are positive integers assigned by the server. Text is trimmed and cannot be blank. PUT retains the restaurant ID used by its menu.
+Restaurant POST/PUT bodies require `name`, `cuisine`, `address`, and `is_open`. IDs are integers assigned by the server. Restaurant text fields require at least one character; whitespace-only values are not rejected by the current model. PUT retains the restaurant ID used by its menu.
 
 ```json
 {"name":"Review Cafe","cuisine":"Cafe","address":"10 Main St","is_open":true}
@@ -89,11 +89,11 @@ Menu POST bodies require `name`, `description`, `price`, and `category`; `is_ava
 {"name":"Chef's Tea","description":"Hot green tea","price":3.25,"category":"drinks","is_available":true}
 ```
 
-Menu PATCH accepts a nonempty subset, such as `{"price":4.50,"is_available":false}`. Omitted fields remain unchanged; explicit nulls, unknown fields, and ID changes are rejected. Restaurant bodies also reject unknown fields.
+Menu PATCH accepts a nonempty subset, such as `{"price":4.50,"is_available":false}`. Omitted fields remain unchanged; explicit nulls, unknown fields, and ID changes are rejected. Restaurant bodies currently ignore unknown fields.
 
 Restaurant search matches a name substring; cuisine matches the full cuisine. Menu category matches the full category. Text filters ignore case and surrounding spaces; blank text means no filter. Restaurant filters combine with AND. Omit `is_open` for all statuses; use `true` or `false` to filter. Empty results return an empty array (inside `items` for menus). Unavailable menu items remain visible.
 
-Missing restaurants/items and cross-restaurant item requests return 404 with a `detail` message. Invalid bodies, filters, or nonpositive/noninteger IDs return 422 with validation details. Restaurant deletion returns 409 until its menu items are removed, preventing orphaned items and accidental reassignment when IDs are reused.
+Missing restaurants/items and cross-restaurant item requests return 404 with a `detail` message. Invalid bodies, boolean filters, or noninteger IDs return 422 with validation details. Menu paths also reject nonpositive IDs. Remove menu items before deleting their restaurant; restaurant deletion currently does not remove or block existing menu items.
 
 See [restaurant API details](docs/restaurant-api.md) and [menu API details](docs/menu-api.md).
 
@@ -107,11 +107,11 @@ Browser: static/index.html + static/app.js
     → data/restaurants.json or data/menu_items.json
 ```
 
-`app/main.py` registers the restaurant and menu routers before mounting static content at `/`. Both data paths and the static directory resolve relative to source files. `app/api/restaurant_routes.py` is a compatibility import of the registered restaurant router, not a second API implementation.
+`app/main.py` registers the restaurant and menu routers before mounting static content at `/`. Data paths resolve relative to source files. Static hosting uses the `static` directory relative to the working directory, so start the server from the project root. `app/api/restaurant_routes.py` contains an older router; `app/main.py` uses `app/api/routers/restaurant_routers.py`.
 
 Restaurant records contain `id`, `name`, `cuisine`, `address`, and `is_open`. Menu items contain their own globally assigned `id` plus `restaurant_id`, `name`, `description`, `price`, `category`, and `is_available`. There is no separate menu ID or CSV source. A restaurant with no matching items has an empty menu. The UI loads backend data rather than embedding a separate restaurant/menu list.
 
-Successful writes use atomic file replacement. Thread locks protect repository mutations within one API process. **Use one server worker**; JSON storage is not a multi-process database or a transaction system across files. The restaurant JSON file must exist; menu storage can initialize on first add. IDs use the current maximum plus one and can be reused after deletion, so they are unsuitable as permanent order references without further work. Keep storage writable and retain backups of any data you need.
+Menu writes use atomic file replacement and a thread lock within one API process. Restaurant writes save directly to JSON without those protections. **Use one server worker**; JSON storage is not a multi-process database or a transaction system across files. The restaurant JSON file must exist; menu storage can initialize on first add. IDs use the current maximum plus one and can be reused after deletion, so they are unsuitable as permanent order references without further work. Keep storage writable and retain backups of any data you need.
 
 Tests inject temporary repository paths so writes do not change the committed demo data. For direct repository use, both repositories accept a `data_path` argument.
 
@@ -119,16 +119,22 @@ Tests inject temporary repository paths so writes do not change the committed de
 
 ```bash
 python -m pytest -q
-node --test tests/frontend.test.cjs
 ```
 
-The Python suite covers routes, services, repositories, validation, search/filter combinations, ownership, failed writes, concurrent restaurant creation, OpenAPI contracts, static serving, and the combined flow over real HTTP. The HTTP check starts Uvicorn with temporary data, terminates it, starts a new process, and reads the saved changes. It requires permission to bind a local loopback port.
+The current suite has 49 tests covering health, restaurant reads/search, selected restaurant errors, menu management, validation, filtering, ownership, and persistence. Menu tests use temporary storage, including a separate Python process to check saved menu changes and a simulated failed write.
 
-The dependency-free Node tests cover apostrophes in menu Edit handlers, literal rendering of user text, visible API/network/non-JSON errors, and clearing stale restaurant selection after a failed details request. These tests simulate the DOM; they do not replace browser verification.
+[GitHub Actions](.github/workflows/pytest.yml) runs pytest on Python 3.10 for pushes to `main` and pull requests targeting `main`. Local setup uses Python 3.14.0. The existing Starlette/httpx TestClient deprecation warning remains.
 
-[GitHub Actions](.github/workflows/pytest.yml) runs the Python suite on Python 3.14 and frontend regression tests on Node 22 for pushes to `main` and pull requests targeting `main`.
+The application, tests, and CI in this PR have been restored to their pre-review versions. The additional integration fixes and tests were removed at my request because they changed other members' parts. The earlier 70-test/browser results apply to that removed implementation, not the current code.
 
-Latest checks: 70 Python tests and 5 frontend tests passed. A separate Chrome check covered the full restaurant/menu flow and confirmed that browser changes stayed saved after a server restart. [PR #37's CI run](https://github.com/reyeszaki/cosc310-bzs/actions/runs/38991584461) also passed both test suites. The existing TestClient deprecation warning remains. Other browsers were not tested.
+## Integration issues for team review
+
+- Some frontend errors are not displayed, and item text containing apostrophes can break the Edit Item button.
+- Restaurant deletion can leave menu items behind. Since IDs can be reused, remove a restaurant's menu items before deleting it.
+- Restaurant writes are not protected against overlapping requests or failed writes.
+- Restaurant validation allows whitespace-only text. User-provided frontend text is inserted into HTML without escaping.
+
+These issues remain for the owners to review; the documentation update does not change their implementation.
 
 ## Manual end-to-end walkthrough
 
@@ -137,11 +143,11 @@ These steps write to JSON. Use a disposable project copy if you want to keep the
 1. Start the app and open `/`. Confirm the seeded restaurants appear. Filter by `ramen`, cuisine `Japanese`, and `Open Only`; reset and try a name with no matches.
 2. Create `Review Cafe`, cuisine `Cafe`, address `10 Main St`, status Open. Find it by name, then click **View Details & Menu**. Confirm details and an empty menu.
 3. Click **Edit Info**, change the name to `Updated Review Cafe` and status to Closed, then save. Confirm details changed and search with `Closed Only`. Use **Set Open** to verify the status toggle.
-4. Add `Chef's Tea`, description `Hot green tea`, price `3.25`, category `drinks`. Click **Edit Item**, change price to `4.50` and availability to No, and update. Confirm the price and unavailable status remain visible.
+4. Add `Green Tea`, description `Hot green tea`, price `3.25`, category `drinks`. Click **Edit Item**, change price to `4.50` and availability to No, and update. Confirm the price and unavailable status remain visible.
 5. Filter the menu with ` DRINKS `, then `mains`, then **Show All Items**. Expect the item, an empty result, then the item again.
-6. Try deleting this restaurant while its item exists; expect a visible message requiring removal of menu items first. In `/docs`, try a missing restaurant ID (404), a blank restaurant name (422), and item price `0` (422); confirm valid data stays unchanged.
+6. In `/docs`, try a missing restaurant ID (404), an empty restaurant name (422), and item price `0` (422); confirm valid data stays unchanged.
 7. Stop and restart the server, refresh the browser, find the restaurant again, and verify its edited details and menu values persisted.
-8. Delete the demo menu item, then delete the demo restaurant. Confirm it disappears from the list. Run both test commands above.
+8. Delete the demo menu item, then delete the demo restaurant. Confirm it disappears from the list. Run the test command above.
 
 ## Project files and handoff
 
@@ -154,7 +160,7 @@ These steps write to JSON. Use a disposable project copy if you want to keep the
 | `app/services/` | Search, management, and ownership rules |
 | `app/repository/` | JSON reads and persistent writes |
 | `data/` | Fictional seed restaurants and menu items |
-| `tests/` | Backend integration and frontend regression tests |
+| `tests/` | Restaurant and menu pytest tests |
 | `.github/workflows/pytest.yml` | Continuous integration |
 | `docs/` | API documentation and AI provenance |
 | `scrum/team-agreement.md` | Team agreement |
