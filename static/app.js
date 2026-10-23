@@ -292,9 +292,9 @@ async function handleUpdateMenuItem(event) {
 
   const msg = document.getElementById("menuEditMessage");
 
-  // Part C uses PATCH for updating menu items
+  // Send all menu item fields using PUT, like restaurant updates.
   const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
-    method: "PATCH",
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
