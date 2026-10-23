@@ -74,7 +74,7 @@ Keep the terminal running; press Ctrl+C to stop. The frontend uses relative API 
 | DELETE | `/restaurants/{restaurant_id}` | 200: deleted restaurant |
 | GET | `/restaurants/{restaurant_id}/menu` | 200: `{"restaurant_id":1,"items":[...]}`; optional `category` |
 | POST | `/restaurants/{restaurant_id}/menu/items` | 201: created menu item |
-| PATCH | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 200: updated item; supplied fields only |
+| PUT | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 200: updated item; all editable fields required |
 | DELETE | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 204: empty response |
 
 Restaurant POST/PUT bodies require `name`, `cuisine`, `address`, and `is_open`. IDs are integers assigned by the server. Restaurant text fields require at least one character; whitespace-only values are not rejected by the current model. PUT retains the restaurant ID used by its menu.
@@ -89,11 +89,11 @@ Menu POST bodies require `name`, `description`, `price`, and `category`; `is_ava
 {"name":"Chef's Tea","description":"Hot green tea","price":3.25,"category":"drinks","is_available":true}
 ```
 
-Menu PATCH accepts a nonempty subset, such as `{"price":4.50,"is_available":false}`. Omitted fields remain unchanged; explicit nulls, unknown fields, and ID changes are rejected. Restaurant bodies currently ignore unknown fields.
+Menu PUT sends all five editable fields: `name`, `description`, `price`, `category`, and `is_available`. To change the price, include the other current values too. Missing fields, nulls, unknown fields, and ID changes are rejected. Restaurant bodies currently ignore unknown fields.
 
 Restaurant search matches a name substring; cuisine matches the full cuisine. Menu category matches the full category. Text filters ignore case and surrounding spaces; blank text means no filter. Restaurant filters combine with AND. Omit `is_open` for all statuses; use `true` or `false` to filter. Empty results return an empty array (inside `items` for menus). Unavailable menu items remain visible.
 
-Missing restaurants/items and cross-restaurant item requests return 404 with a `detail` message. Invalid bodies, boolean filters, or noninteger IDs return 422 with validation details. Menu paths also reject nonpositive IDs. Remove menu items before deleting their restaurant; restaurant deletion currently does not remove or block existing menu items.
+Missing restaurants/items and cross-restaurant item requests return 404 with a `detail` message. Invalid bodies, boolean filters, or noninteger IDs return 422 with validation details. A menu request for a nonexistent restaurant or item returns 404. Remove menu items before deleting their restaurant; restaurant deletion currently does not remove or block existing menu items.
 
 See [restaurant API details](docs/restaurant-api.md) and [menu API details](docs/menu-api.md).
 
@@ -111,7 +111,7 @@ Browser: static/index.html + static/app.js
 
 Restaurant records contain `id`, `name`, `cuisine`, `address`, and `is_open`. Menu items contain their own globally assigned `id` plus `restaurant_id`, `name`, `description`, `price`, `category`, and `is_available`. There is no separate menu ID or CSV source. A restaurant with no matching items has an empty menu. The UI loads backend data rather than embedding a separate restaurant/menu list.
 
-Menu writes use atomic file replacement and a thread lock within one API process. Restaurant writes save directly to JSON without those protections. **Use one server worker**; JSON storage is not a multi-process database or a transaction system across files. The restaurant JSON file must exist; menu storage can initialize on first add. IDs use the current maximum plus one and can be reused after deletion, so they are unsuitable as permanent order references without further work. Keep storage writable and retain backups of any data you need.
+Menu and restaurant writes save directly to JSON. Menu storage was simplified to match the restaurant repository; it no longer uses a file lock or atomic replacement. Avoid overlapping edits and keep backups in case a write is interrupted. **Use one server worker**; JSON storage is not a multi-process database or a transaction system across files. The restaurant JSON file must exist; menu storage can initialize on first add. IDs use the current maximum plus one and can be reused after deletion, so they are unsuitable as permanent order references without further work. Keep storage writable and retain backups of any data you need.
 
 Tests inject temporary repository paths so writes do not change the committed demo data. For direct repository use, both repositories accept a `data_path` argument.
 
@@ -121,7 +121,7 @@ Tests inject temporary repository paths so writes do not change the committed de
 python -m pytest -q
 ```
 
-The current suite has 49 tests covering health, restaurant reads/search, selected restaurant errors, menu management, validation, filtering, ownership, and persistence. Menu tests use temporary storage, including a separate Python process to check saved menu changes and a simulated failed write.
+The current suite has 39 tests covering health, restaurant reads/search, selected restaurant errors, menu management, validation, filtering, ownership, and persistence. Menu tests use temporary files and straightforward test functions like the restaurant tests. They check saved JSON and reload it through new repository objects.
 
 [GitHub Actions](.github/workflows/pytest.yml) runs pytest on Python 3.10 for pushes to `main` and pull requests targeting `main`. Local setup uses Python 3.14.0. The existing Starlette/httpx TestClient deprecation warning remains.
 

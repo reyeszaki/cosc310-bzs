@@ -1,65 +1,109 @@
-# Part C menu API
+# Part C menus
 
-Supports #18 Manage menu items, #19 View menu, and #20 Filter menu by category.
-Open `/docs` for interactive requests and full request/response schemas.
+Part C handles viewing a restaurant's menu, filtering by category, and adding,
+updating, or deleting menu items. It supports issues #18, #19, and #20.
+
+## How the code fits together
+
+The menu follows the same structure as the restaurant code:
+
+**Route → Service → Repository → JSON**
+
+| File | What it does |
+| --- | --- |
+| `app/api/routers/menu_routers.py` | Receives the request and returns a response or a 404 error. |
+| `app/schema/menu_schema.py` | Defines the fields and checks the input. |
+| `app/services/menu_service.py` | Checks the restaurant exists and handles menu filtering. |
+| `app/repository/menu_repo.py` | Reads and writes `data/menu_items.json`. |
+| `tests/test_menus.py` | Checks the main menu operations using temporary files. |
+
+For example, when we update an item, the route receives the new fields, the service
+checks the restaurant, and the repository finds the item using both IDs and saves
+it. The updated item is returned to the frontend.
 
 ## Endpoints
 
-All paths start with `/restaurants/{restaurant_id}/menu`. IDs are positive integers;
-restaurant IDs match `data/restaurants.json`.
-
-| Method | Path suffix | Success response |
+| Method | Path | Result |
 | --- | --- | --- |
-| GET | (none) | 200: `{ "restaurant_id": 1, "items": [...] }` |
-| POST | `/items` | 201: created item |
-| PATCH | `/items/{item_id}` | 200: updated item |
-| DELETE | `/items/{item_id}` | 204: no body |
+| GET | `/restaurants/{restaurant_id}/menu` | 200: the restaurant ID and its menu items |
+| POST | `/restaurants/{restaurant_id}/menu/items` | 201: the new item |
+| PUT | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 200: the updated item |
+| DELETE | `/restaurants/{restaurant_id}/menu/items/{item_id}` | 204: no response body |
 
-GET accepts optional `?category=drinks`. Matching ignores case and surrounding
-spaces. Omit or clear the parameter to show all items. An unknown category or an
-existing restaurant with no items returns an empty list. Unavailable items remain
-visible with `is_available: false`.
+PUT replaces PATCH for menu updates. PUT sends **all editable fields**, like the
+restaurant update endpoint. The frontend edit form already contains those fields.
+To change only the price, send the other current values along with the new price.
+Older clients that still use PATCH must switch to PUT.
 
-## Item fields and validation
+## Item fields
 
-POST requires `name`, `description`, `price`, and `category`:
+Use this body to add an item:
 
 ```json
 {
-  "name": "Mochi",
-  "description": "Sweet rice cakes",
-  "price": 4.50,
-  "category": "desserts",
+  "name": "Green Tea",
+  "description": "Hot green tea",
+  "price": 3.25,
+  "category": "drinks",
   "is_available": true
 }
 ```
 
-- Text fields cannot be blank. Categories are free text, one per item.
-- Price must be positive, with at most two decimal places and ten total digits.
-- Availability defaults to true. Responses also include generated `id` and `restaurant_id`.
-- Prices are JSON numbers; the frontend should display two decimal places.
-- PATCH accepts a nonempty subset, for example `{ "price": 5.25, "is_available": false }`.
-  Omitted fields stay unchanged. Explicit nulls, unknown fields, and ID changes are rejected.
-- Successful changes are saved in `data/menu_items.json` and visible on the next GET.
+- `name`, `description`, and `category` are required and cannot be blank.
+- `price` is required, must be positive, and can have up to two decimal places.
+  The largest accepted price is 99999999.99.
+- `is_available` defaults to true when adding an item. PUT requires it explicitly.
+- The server assigns `id` and `restaurant_id`. Do not include them in the body.
+- Responses contain the item fields plus both IDs. Prices are JSON numbers.
 
-## Errors and limits
+To update the item, send the same five fields to its PUT URL. For example:
 
-- **404:** Missing restaurant or item, including an item requested under the wrong
-  restaurant. Body: `{ "detail": "Explanation" }`.
-- **422:** Invalid input or nonpositive IDs. Body contains FastAPI validation details.
-- Run one server worker: the file lock coordinates threads within one process only.
-- Item IDs use the current maximum plus one; deleting the highest ID allows reuse.
-  This is sufficient for this slice, but should change before storing order references.
-- Authentication, carts, and separate category management are outside Part C.
+```json
+{
+  "name": "Green Tea",
+  "description": "Hot green tea",
+  "price": 4.50,
+  "category": "drinks",
+  "is_available": false
+}
+```
 
-## Simple demo
+## Viewing and filtering
 
-1. Run `python -m uvicorn app.main:app --reload`; leave that terminal running.
-2. Open `http://127.0.0.1:8000/docs` and GET restaurant 1's menu.
-3. Filter by `drinks`, then clear the filter.
-4. POST the example above and note the returned item ID.
-5. PATCH that ID with `{ "price": 5.25, "is_available": false }`; GET to show the change.
-6. Try `{ "price": 0 }` and a missing restaurant to show 422 and 404.
-7. Stop with Ctrl+C, restart, and GET again to show persistence.
-8. DELETE the demo item; GET to show it was removed.
-9. In another terminal with the virtual environment active, run `python -m pytest -q`.
+GET returns a menu in this form:
+
+```json
+{"restaurant_id": 1, "items": []}
+```
+
+The `items` list contains the matching items. An empty list means there are no
+items to show. Unavailable items stay visible with `is_available: false`.
+
+Add `?category=drinks` to filter. Matching ignores case and surrounding spaces.
+A blank category shows everything. An unknown category returns an empty list.
+
+## Errors and storage
+
+- **404:** The restaurant or item does not exist, or the item belongs to another
+  restaurant. The response contains a `detail` message.
+- **422:** Required fields are missing, values are invalid, extra fields are sent,
+  or a URL ID is not an integer. PUT does not accept partial or null values.
+- The repository reads JSON on each request and writes it after each successful
+  change. Creating a new repository or restarting the app reads those saved values.
+- Storage now uses the same simple read/write approach as the restaurant repository.
+  It does not have the previous file lock or atomic replacement. Use one worker and
+  avoid simultaneous edits; an interrupted write can damage the file. Keep backups.
+- IDs use the current maximum plus one and can be reused after deletion.
+
+## Demo steps
+
+1. Start the app from the project root with `python -m uvicorn app.main:app --reload`.
+2. Open `/docs` and GET restaurant 1's menu.
+3. Try category `drinks`, then clear the filter.
+4. POST the add example and note the returned item ID.
+5. PUT the update example using that ID. GET the menu again to see the new price
+   and unavailable status.
+6. Try price `0` for a 422 response and a missing restaurant for a 404 response.
+7. Stop and restart the app. GET the menu to check the saved changes.
+8. DELETE the demo item and GET the menu again.
+9. Run `python -m pytest -q`.
