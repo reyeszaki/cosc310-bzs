@@ -187,3 +187,16 @@ One team member submits a PDF to the Canvas group assignment containing:
 Before selecting the final commit, complete teammate review, integrate approved changes, confirm CI, and include actual scrum meeting notes under `scrum/` using the course sprint-planning template. All contributors must confirm the shared `docs/PROVENANCE.md` uses the required course fields and labels for their AI-influenced artifacts. A progress note alone is not a replacement for meeting records.
 
 Create the submission tag only after choosing the final reviewed version. Do not move or overwrite the submitted tag after the deadline. If a revision is required, the assignment specifies a new tag named `milestone1-r1`. The tag identifies the assessed version; later work does not alter the original submission.
+
+### Menu categories
+
+Select a restaurant and use **Menu Categories** below its menu. Enter a name to
+create a category; enter its current name and a new name to rename it. Renaming
+updates that restaurant's items too. A category can be deleted only when empty.
+Existing menu categories are listed automatically, and new empty categories are
+saved in `data/menu_categories.json`.
+
+See `docs/menu-api.md` for the endpoints, errors and storage limitations. Category
+checks are in `tests/test_categories.py`; run them with
+`python -m pytest tests/test_categories.py -q`. This adds category management;
+restaurant-owner authorization remains unfinished.

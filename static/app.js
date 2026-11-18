@@ -176,6 +176,7 @@ async function deleteRestaurant(restaurantId) {
 }
 
 async function loadMenu(restaurantId, category = "") {
+  await loadCategories(restaurantId);
   const menuDiv = document.getElementById("menuItems");
   const params = new URLSearchParams();
   if (category) params.append("category", category);
@@ -323,3 +324,47 @@ async function deleteMenuItem(itemId) {
 
 // Initial load on page startup
 loadRestaurants();
+
+async function loadCategories(restaurantId) {
+  const list = document.getElementById("categoryList");
+  list.textContent = "Loading categories...";
+  try {
+    const response = await fetch(`/restaurants/${restaurantId}/menu/categories`);
+    if (!response.ok) throw new Error("Could not load categories");
+    const names = await response.json();
+    list.textContent = names.length ? names.join(", ") : "No categories yet.";
+  } catch (error) {
+    list.textContent = error.message;
+  }
+}
+
+async function changeCategory(method) {
+  if (!currentRestaurant) return;
+  const message = document.getElementById("categoryMessage");
+  const name = document.getElementById("categoryName").value.trim();
+  const newName = document.getElementById("categoryNewName").value.trim();
+  if (!name || (method === "PUT" && !newName)) {
+    message.textContent = "Enter the category name and a new name if renaming.";
+    return;
+  }
+  const data = {name: name};
+  if (method === "PUT") data.new_name = newName;
+  try {
+    const response = await fetch(`/restaurants/${currentRestaurant.id}/menu/categories`, {
+      method: method,
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(typeof error.detail === "string" ? error.detail : "Check the category names.");
+    }
+    message.textContent = "Category saved.";
+    document.getElementById("categoryName").value = "";
+    document.getElementById("categoryNewName").value = "";
+    closeEditMenuItem();
+    clearMenuFilter();
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
