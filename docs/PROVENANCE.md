@@ -1,5 +1,14 @@
 # AI Use and Provenance
 
+## PR #45 review follow-up
+
+- **Artifact:** Menu route descriptions, positive URL-ID validation, regression tests and menu API wording.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Address Shawn's request to restore route descriptions and keep positive item-ID validation.
+- **Influence:** Codex added the route documentation and FastAPI Path checks, with tests for zero/negative IDs and the OpenAPI descriptions.
+- **Validation:** All 41 tests passed on the PR #45 branch. The existing TestClient deprecation warning remains.
+
 ## M0 foundation
 
 - **Student(s):** Jean Zachary Reyes
@@ -66,6 +75,17 @@
 - **Influence:** I used Claude as a coach for the layered design, test-driven development and test isolation. I wrote the first search test and the guard clause; Claude generated the final filter method, the router query-parameter change and the search/filter test block, which I reviewed and adapted.
 - **Validation:** 14 tests passed locally and in GitHub Actions. I manually tested each filter in `/docs`, including `?is_open=maybe` returning 422. I can explain every line.
 - **PR:** [#33](https://github.com/reyeszaki/cosc310-bzs/pull/33)
+
+## Part C simplification — 2026-10-23
+
+- **Student(s):** Jean Zachary Reyes
+- **Artifact:** Menu router, service, repository, schemas, `tests/test_menus.py`, the menu update request in `static/app.js`, `docs/menu-api.md`, and the README menu/testing sections.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Make my menu section easier to follow and explain using the same style as the restaurant code.
+- **Influence:** I asked Codex to replace PATCH with full-item PUT updates, use plain routes and loops, simplify JSON storage, and rewrite the tests in the restaurant-test style. The frontend menu request and documentation were updated to match. Restaurant code was not changed.
+- **Validation:** The local suite passed 39 tests. Tests use temporary menu data and cover CRUD operations, categories, input errors, ownership, and reading saved changes through new repository objects.
+- **Tradeoff:** Simple JSON writes replace the previous lock and atomic replacement. This is easier to explain but does not protect against overlapping edits or an interrupted write.
 
 ## Team contributions
 
