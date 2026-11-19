@@ -1,5 +1,14 @@
 # AI Use and Provenance
 
+## PR #45 review follow-up
+
+- **Artifact:** Menu route descriptions, positive URL-ID validation, regression tests and menu API wording.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Address Shawn's request to restore route descriptions and keep positive item-ID validation.
+- **Influence:** Codex added the route documentation and FastAPI Path checks, with tests for zero/negative IDs and the OpenAPI descriptions.
+- **Validation:** All 41 tests passed on the PR #45 branch. The existing TestClient deprecation warning remains.
+
 ## M0 foundation
 
 - **Student(s):** Jean Zachary Reyes

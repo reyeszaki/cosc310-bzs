@@ -217,3 +217,33 @@ def test_menu_update_uses_put(tmp_path, monkeypatch):
     assert "patch" not in item_route
     response = client.put("/restaurants/1/menu/items/1", json=NEW_ITEM)
     assert response.status_code == 200
+
+
+def test_menu_ids_must_be_positive(tmp_path, monkeypatch):
+    service = make_menu_service(tmp_path)
+    monkeypatch.setattr(menu_routers, "service", service)
+    original = (tmp_path / "menu_items.json").read_text()
+    for invalid_id in [0, -1]:
+        assert client.get(f"/restaurants/{invalid_id}/menu").status_code == 422
+        assert client.post(f"/restaurants/{invalid_id}/menu/items", json=NEW_ITEM).status_code == 422
+        assert client.put(f"/restaurants/{invalid_id}/menu/items/1", json=NEW_ITEM).status_code == 422
+        assert client.delete(f"/restaurants/{invalid_id}/menu/items/1").status_code == 422
+        assert client.put(f"/restaurants/1/menu/items/{invalid_id}", json=NEW_ITEM).status_code == 422
+        assert client.delete(f"/restaurants/1/menu/items/{invalid_id}").status_code == 422
+    assert (tmp_path / "menu_items.json").read_text() == original
+
+
+def test_menu_routes_have_descriptions_and_positive_id_constraints():
+    paths = client.get("/openapi.json").json()["paths"]
+    operations = [
+        paths["/restaurants/{restaurant_id}/menu"]["get"],
+        paths["/restaurants/{restaurant_id}/menu/items"]["post"],
+        paths["/restaurants/{restaurant_id}/menu/items/{item_id}"]["put"],
+        paths["/restaurants/{restaurant_id}/menu/items/{item_id}"]["delete"],
+    ]
+    for operation in operations:
+        assert operation["description"]
+        assert "404" in operation["responses"]
+        for parameter in operation["parameters"]:
+            if parameter["in"] == "path":
+                assert parameter["schema"]["exclusiveMinimum"] == 0

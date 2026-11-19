@@ -87,7 +87,8 @@ A blank category shows everything. An unknown category returns an empty list.
 - **404:** The restaurant or item does not exist, or the item belongs to another
   restaurant. The response contains a `detail` message.
 - **422:** Required fields are missing, values are invalid, extra fields are sent,
-  or a URL ID is not an integer. PUT does not accept partial or null values.
+  or a URL ID is not a positive integer. Restaurant and item IDs must be greater
+  than zero. PUT does not accept partial or null values.
 - The repository reads JSON on each request and writes it after each successful
   change. Creating a new repository or restarting the app reads those saved values.
 - Storage now uses the same simple read/write approach as the restaurant repository.
