@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routers import menu_routers, restaurant_routers
+from app.api.routers import category_routers, menu_routers, restaurant_routers
 
 app = FastAPI(
     title="COSC 310 Food Delivery API",
@@ -11,6 +11,7 @@ app = FastAPI(
 
 app.include_router(restaurant_routers.router)
 app.include_router(menu_routers.router)
+app.include_router(category_routers.router)
 
 
 @app.get(

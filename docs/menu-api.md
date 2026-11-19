@@ -108,3 +108,36 @@ A blank category shows everything. An unknown category returns an empty list.
 7. Stop and restart the app. GET the menu to check the saved changes.
 8. DELETE the demo item and GET the menu again.
 9. Run `python -m pytest -q`.
+
+## Menu category management
+
+Categories are scoped to one restaurant. Existing item categories appear automatically;
+there is no need to edit the current menu data. Empty categories are saved in
+`data/menu_categories.json`, which is created on the first successful category change.
+
+All category endpoints use `/restaurants/{restaurant_id}/menu/categories`:
+
+| Method | JSON body | Success |
+| --- | --- | --- |
+| GET | None | 200, list of category names |
+| POST | `{"name": "desserts"}` | 201, updated list |
+| PUT | `{"name": "desserts", "new_name": "sweets"}` | 200, updated list |
+| DELETE | `{"name": "sweets"}` | 204, empty response |
+
+Names are trimmed, must contain 1–80 characters, and are compared without case.
+A duplicate name returns 409. A missing restaurant or category returns 404.
+Invalid request fields return 422. Renaming also changes matching menu items in
+that restaurant, so the existing category filter uses the new name.
+
+Deleting a category with items returns 409. Move its items to another category or
+delete them first, then delete the empty category. Item creation still accepts a
+category name directly, preserving the existing menu-item API.
+
+Use the Menu Categories box beneath the selected restaurant's menu to create,
+rename or delete an empty category. Refreshing the menu reloads the category list.
+
+Limitations: these endpoints use the current unauthenticated M1 setup; restaurant
+owner permissions are not implemented. Renaming writes the item file and category
+file separately, so it is not a transaction and has no rollback if the second write
+fails. Use one application worker and avoid simultaneous edits, as with the current
+menu storage.

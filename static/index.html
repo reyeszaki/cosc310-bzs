@@ -68,6 +68,17 @@
     </div>
     <div id="menuItems" style="margin-top: 10px;">No menu loaded.</div>
 
+    <div class="card">
+      <h4>Menu Categories</h4>
+      <p id="categoryList"></p>
+      <label>Category name: <input id="categoryName" type="text" maxlength="80" /></label>
+      <label>New name (for rename): <input id="categoryNewName" type="text" maxlength="80" /></label>
+      <button onclick="changeCategory('POST')">Create Category</button>
+      <button onclick="changeCategory('PUT')">Rename Category</button>
+      <button onclick="changeCategory('DELETE')">Delete Empty Category</button>
+      <p id="categoryMessage" role="status"></p>
+    </div>
+
     <!-- Menu Item -->
     <div class="row" style="margin-top: 1rem;">
       <div class="col card">

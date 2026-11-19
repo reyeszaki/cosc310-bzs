@@ -90,3 +90,14 @@
 ## Team contributions
 
 Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
+
+## Menu category management
+
+- **Artifact:** Category schema, repository, service, routes, menu UI changes, tests, and related documentation.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Add category creation, renaming and deletion using the existing project style.
+- **Influence:** Codex generated this implementation and its tests after I selected the feature and asked for straightforward code.
+- **Validation:** The local pytest suite passed 48 tests, including 9 new category tests. These cover existing categories, creation, renaming, category filtering, deletion rules, validation, restaurant separation and reloading saved files. The existing TestClient deprecation warning remains.
+- **Integration checks:** Real HTTP create/rename/filter/delete requests passed using isolated JSON files, including a full server restart. JavaScript syntax and simulated DOM/fetch checks passed; a browser walkthrough has not been run.
+- **Limitations:** Owner authorization and transactional writes across the menu/category files are not implemented.
