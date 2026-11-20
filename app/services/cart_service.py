@@ -121,7 +121,7 @@ class CartService:
                     raise LookupError("A cart item no longer exists on the menu")
 
                 quantity = entry["quantity"]
-                line_total = item.price * quantity
+                line_total = Decimal(str(item.price)) * quantity
                 subtotal += line_total
 
                 items.append(CartItem(
