@@ -102,3 +102,13 @@ Each member should record their own AI use. Work written by a student using AI o
 - **Influence:** I wrote the schemas, repository, and password hashing myself with step-by-step guidance from Claude. Claude generated the `UpdateUser` validator, `verify_password`, the `UserService` class, `dependencies.py`, the account routes, and the test file. I reviewed and adjusted all of it.
 - **Validation:** Tested all account endpoints manually in `/docs` (201, 409, 401, 403, 422 cases, logout, deactivation, restart persistence). Added 5 pytest tests (repository persistence, API auth, role check, multi-subsystem flow, regression); full suite passes 58/58 locally and in CI.
 - **PR:** [#88](https://github.com/reyeszaki/cosc310-bzs/pull/88)
+## Checkout and orders
+
+- **Student(s):** Jean Zachary Reyes and Shawn Goh.
+- **Contributions (team-provided):** Shawn (@sgoh01): orders. Jean (@reyeszaki): checkout and integration.
+- **Artifact:** Order schema, repository/service, checkout service, authenticated routes, tests, documentation and cart price conversion.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex.
+- **Influence:** Codex generated the draft code, tests and documentation at Jean's request. The team-provided responsibility split above does not imply that all code was manually authored by either student. Team review and understanding still need to be confirmed.
+- **Validation:** 54 local pytest tests passed, including 8 new checkout/order tests. TestClient integration covers authentication, cart creation, current prices, order snapshots, ownership, persistence reloads and save/clear failures. No browser or separate server-restart check was run. The existing TestClient deprecation warning remains.
+- **Limitations:** Backend only. Separate order/cart writes are not transactional. Concurrent checkout and retry protection are not implemented.
