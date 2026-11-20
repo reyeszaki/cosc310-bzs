@@ -90,3 +90,15 @@
 ## Team contributions
 
 Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
+
+
+## M2 customer accounts and authentication 
+
+- **Student(s):** Beab Girma Yifrashewa
+- **Artifact:** `app/schema/users_schema.py`, `app/repository/users_repo.py`, `app/services/users_service.py`, `app/api/dependencies.py`, `app/api/routers/users_routers.py`, `app/main.py`, `data/users.json`, and `tests/test_users.py`.
+- **Label:** AI-ASSISTED
+- **AI tool:** Claude (Anthropic)
+- **Purpose:** Implement sign up, login/logout, profile and address update, account deactivation, and backend authentication and role checks.
+- **Influence:** I wrote the schemas, repository, and password hashing myself with step-by-step guidance from Claude. Claude generated the `UpdateUser` validator, `verify_password`, the `UserService` class, `dependencies.py`, the account routes, and the test file. I reviewed and adjusted all of it.
+- **Validation:** Tested all account endpoints manually in `/docs` (201, 409, 401, 403, 422 cases, logout, deactivation, restart persistence). Added 5 pytest tests (repository persistence, API auth, role check, multi-subsystem flow, regression); full suite passes 58/58 locally and in CI.
+- **PR:** [#88](https://github.com/reyeszaki/cosc310-bzs/pull/88)
