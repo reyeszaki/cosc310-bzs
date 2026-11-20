@@ -1,5 +1,14 @@
 # AI Use and Provenance
 
+## PR #45 review follow-up
+
+- **Artifact:** Menu route descriptions, positive URL-ID validation, regression tests and menu API wording.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Address Shawn's request to restore route descriptions and keep positive item-ID validation.
+- **Influence:** Codex added the route documentation and FastAPI Path checks, with tests for zero/negative IDs and the OpenAPI descriptions.
+- **Validation:** All 41 tests passed on the PR #45 branch. The existing TestClient deprecation warning remains.
+
 ## M0 foundation
 
 - **Student(s):** Jean Zachary Reyes
@@ -55,6 +64,41 @@
 - **Validation:** Tested the web server locally using Uvicorn, verified frontend-to-backend API communication across all routes, confirmed local pytest suite execution, and verified green CI builds on GitHub Actions. All code is read and reviewed before use.
 - **PR:** #34
 
+
+## Part A restaurant list, search and filter - 2026-10-15
+
+- **Student(s):** Beab Girma
+- **Artifact:** `app/services/restaurant_service.py` (`search_restaurants`), `app/api/routers/restaurant_routers.py` (`get_restaurants` query parameters), and the search/filter tests in `tests/test_restaraunts.py`.
+- **Label:** AI-GENERATED
+- **AI tool:** Claude
+- **Purpose:** Add `?search=`, `?cuisine=` and `?is_open=` filtering to `GET /restaurants` (US-17, #29).
+- **Influence:** I used Claude as a coach for the layered design, test-driven development and test isolation. I wrote the first search test and the guard clause; Claude generated the final filter method, the router query-parameter change and the search/filter test block, which I reviewed and adapted.
+- **Validation:** 14 tests passed locally and in GitHub Actions. I manually tested each filter in `/docs`, including `?is_open=maybe` returning 422. I can explain every line.
+- **PR:** [#33](https://github.com/reyeszaki/cosc310-bzs/pull/33)
+
+## Part C simplification — 2026-10-23
+
+- **Student(s):** Jean Zachary Reyes
+- **Artifact:** Menu router, service, repository, schemas, `tests/test_menus.py`, the menu update request in `static/app.js`, `docs/menu-api.md`, and the README menu/testing sections.
+- **Label:** AI-GENERATED
+- **AI tool:** OpenAI Codex
+- **Purpose:** Make my menu section easier to follow and explain using the same style as the restaurant code.
+- **Influence:** I asked Codex to replace PATCH with full-item PUT updates, use plain routes and loops, simplify JSON storage, and rewrite the tests in the restaurant-test style. The frontend menu request and documentation were updated to match. Restaurant code was not changed.
+- **Validation:** The local suite passed 39 tests. Tests use temporary menu data and cover CRUD operations, categories, input errors, ownership, and reading saved changes through new repository objects.
+- **Tradeoff:** Simple JSON writes replace the previous lock and atomic replacement. This is easier to explain but does not protect against overlapping edits or an interrupted write.
+
 ## Team contributions
 
 Each member should record their own AI use. Work written by a student using AI only for ideas or guidance belongs under AI-ASSISTED; generated code or text used in the project belongs under AI-GENERATED. Teammate review and understanding of the submitted work still need to be confirmed by the team.
+
+
+## M2 customer accounts and authentication 
+
+- **Student(s):** Beab Girma Yifrashewa
+- **Artifact:** `app/schema/users_schema.py`, `app/repository/users_repo.py`, `app/services/users_service.py`, `app/api/dependencies.py`, `app/api/routers/users_routers.py`, `app/main.py`, `data/users.json`, and `tests/test_users.py`.
+- **Label:** AI-ASSISTED
+- **AI tool:** Claude (Anthropic)
+- **Purpose:** Implement sign up, login/logout, profile and address update, account deactivation, and backend authentication and role checks.
+- **Influence:** I wrote the schemas, repository, and password hashing myself with step-by-step guidance from Claude. Claude generated the `UpdateUser` validator, `verify_password`, the `UserService` class, `dependencies.py`, the account routes, and the test file. I reviewed and adjusted all of it.
+- **Validation:** Tested all account endpoints manually in `/docs` (201, 409, 401, 403, 422 cases, logout, deactivation, restart persistence). Added 5 pytest tests (repository persistence, API auth, role check, multi-subsystem flow, regression); full suite passes 58/58 locally and in CI.
+- **PR:** [#88](https://github.com/reyeszaki/cosc310-bzs/pull/88)
