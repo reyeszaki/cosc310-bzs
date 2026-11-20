@@ -7,6 +7,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 
+from app.api.dependencies import require_role, user_service
+from app.repository.cart_repo import CartRepository
+from app.repository.menu_repo import MenuRepository
+from app.repository.restaurant_repo import RestaurantRepository
+from app.schema.users_schema import UserPublic
+from app.services.menu_service import MenuService
+
 from app.schema.cart_schema import Cart, CartItemCreate, CartItemUpdate
 from app.services.cart_service import CartService
 
@@ -14,12 +21,21 @@ from app.services.cart_service import CartService
 router = APIRouter(prefix="/cart", tags=["cart"])
 
 
-def get_current_customer_id() -> int:
-    raise HTTPException(status_code=401, detail="Sign-in required")
+restaurants = RestaurantRepository()
+cart_service = CartService(
+    CartRepository(),
+    MenuService(MenuRepository(), restaurants),
+    user_service.require_active,
+    restaurants,
+)
+
+
+def get_current_customer_id(user: UserPublic = Depends(require_role("customer"))) -> int:
+    return user.id
 
 
 def get_cart_service() -> CartService:
-    raise HTTPException(status_code=503, detail="Cart service is not configured")
+    return cart_service
 
 
 CustomerID = Annotated[int, Depends(get_current_customer_id)]

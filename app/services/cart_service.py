@@ -9,10 +9,11 @@ from app.schema.cart_schema import Cart, CartItem, CartItemCreate, CartItemUpdat
 
 
 class CartService:
-    def __init__(self, cart_repo, menu_service, require_active_customer):
+    def __init__(self, cart_repo, menu_service, require_active_customer, restaurant_repo):
         self.cart_repo = cart_repo
         self.menu_service = menu_service
         self.require_active_customer = require_active_customer
+        self.restaurant_repo = restaurant_repo
 
     def get_or_create_cart(self, customer_id: int) -> Cart:
         self.require_active_customer(customer_id)
@@ -27,6 +28,12 @@ class CartService:
     def add_item(self, customer_id: int, request: CartItemCreate) -> Cart:
         self.require_active_customer(customer_id)
         cart = self._load_cart(customer_id)
+
+        restaurant = self.restaurant_repo.get_by_id(request.restaurant_id)
+        if restaurant is None:
+            raise LookupError("Restaurant not found")
+        if not restaurant["is_open"]:
+            raise ValueError("Restaurant is closed")
 
         if cart["items"] and cart["restaurant_id"] != request.restaurant_id:
             raise ValueError("Cart items must be from the same restaurant")
