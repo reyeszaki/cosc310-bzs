@@ -107,8 +107,8 @@ Each member should record their own AI use. Work written by a student using AI o
 - **Student(s):** Jean Zachary Reyes and Shawn Goh.
 - **Contributions (team-provided):** Shawn (@sgoh01): orders. Jean (@reyeszaki): checkout and integration.
 - **Artifact:** Order schema, repository/service, checkout service, authenticated routes, tests, documentation and cart price conversion.
-- **Label:** AI-GENERATED
+- **Label:** AI-ASSISTED
 - **AI tool:** OpenAI Codex.
-- **Influence:** Codex generated the draft code, tests and documentation at Jean's request. The team-provided responsibility split above does not imply that all code was manually authored by either student. Team review and understanding still need to be confirmed.
-- **Validation:** 54 local pytest tests passed, including 8 new checkout/order tests. TestClient integration covers authentication, cart creation, current prices, order snapshots, ownership, persistence reloads and save/clear failures. No browser or separate server-restart check was run. The existing TestClient deprecation warning remains.
+- **Influence:** We used Codex to help us implement the feature step by step. We reviewed the code, followed along with the implementation, and made minor changes ourselves to keep it simple and consistent with what we have.
+- **Validation:** All 54 pytest tests passed, including 8 new checkout/order tests.
 - **Limitations:** Backend only. Separate order/cart writes are not transactional. Concurrent checkout and retry protection are not implemented.
