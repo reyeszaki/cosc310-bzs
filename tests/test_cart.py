@@ -38,6 +38,7 @@ def client(tmp_path):
         CartRepository(tmp_path / "carts.json"),
         SampleMenuService(),
         require_active_customer,
+        cart_routers.restaurants,
     )
 
     app = FastAPI()
