@@ -76,15 +76,13 @@ class RestaurantService:
 
         if search:
             q = search.strip().lower()
-            restaurants = [
-                r
-                for r in restaurants
-                if q in r.name.lower() or q in r.address.lower()
-            ]
+            if q:
+                restaurants = [r for r in restaurants if q in r.name.lower()]
 
         if cuisine:
             c = cuisine.strip().lower()
-            restaurants = [r for r in restaurants if r.cuisine.strip().lower() == c]
+            if c:
+                restaurants = [r for r in restaurants if r.cuisine.strip().lower() == c]
 
         if is_open is not None:
             restaurants = [r for r in restaurants if r.is_open == is_open]
