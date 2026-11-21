@@ -187,3 +187,10 @@ One team member submits a PDF to the Canvas group assignment containing:
 Before selecting the final commit, complete teammate review, integrate approved changes, confirm CI, and include actual scrum meeting notes under `scrum/` using the course sprint-planning template. All contributors must confirm the shared `docs/PROVENANCE.md` uses the required course fields and labels for their AI-influenced artifacts. A progress note alone is not a replacement for meeting records.
 
 Create the submission tag only after choosing the final reviewed version. Do not move or overwrite the submitted tag after the deadline. If a revision is required, the assignment specifies a new tag named `milestone1-r1`. The tag identifies the assessed version; later work does not alter the original submission.
+
+## Checkout and initial orders
+
+Authenticated customers can use POST `/checkout`, GET `/orders` and GET
+`/orders/{order_id}`. Checkout validates the saved cart against current menu data,
+saves an order snapshot, then clears the cart. See `docs/checkout-api.md` for setup
+and limitations. Frontend checkout controls are not included.

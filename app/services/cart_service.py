@@ -1,4 +1,3 @@
-# here ill add the 5 methods to handling cart operations:
 
 # add item, remove item, update quantity (to get a specific item and set its quantity), get/retrieve cart, clear cart
 # all based on the different schemas we have for cart
@@ -15,9 +14,12 @@ class CartService:
         self.require_active_customer = require_active_customer
         self.restaurant_repo = restaurant_repo
 
-    def get_or_create_cart(self, customer_id: int) -> Cart:
+    def get_saved_cart(self, customer_id: int) -> dict | None:
         self.require_active_customer(customer_id)
-        cart = self.cart_repo.get_by_customer(customer_id)
+        return self.cart_repo.get_by_customer(customer_id)
+
+    def get_or_create_cart(self, customer_id: int) -> Cart:
+        cart = self.get_saved_cart(customer_id)
 
         if cart is None:
             cart = self._empty_cart(customer_id)
@@ -121,7 +123,7 @@ class CartService:
                     raise LookupError("A cart item no longer exists on the menu")
 
                 quantity = entry["quantity"]
-                line_total = item.price * quantity
+                line_total = Decimal(str(item.price)) * quantity
                 subtotal += line_total
 
                 items.append(CartItem(
