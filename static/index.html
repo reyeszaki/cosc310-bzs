@@ -5,6 +5,7 @@
   <title>Food Delivery Service</title>
   <style>
     body { font-family: sans-serif; margin: 2rem; max-width: 950px; }
+    [hidden] { display: none !important; }
     section { margin-bottom: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 1.5rem; }
     .card { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 4px; }
     .open { color: green; font-weight: bold; }
@@ -18,6 +19,38 @@
 </head>
 <body>
   <h1>Food Delivery Portal</h1>
+
+  <section>
+    <h2>Customer Account</h2>
+    <p id="accountStatus" role="status">Not signed in.</p>
+    <div id="signInForms" class="row">
+      <form class="col" id="registerForm" onsubmit="registerCustomer(event)">
+        <h3>Create an account</h3>
+        <label>First name: <input id="registerName" required /></label>
+        <label>Last name: <input id="registerLastName" required /></label>
+        <label>Email: <input id="registerEmail" type="email" required /></label>
+        <label>Password: <input id="registerPassword" type="password" minlength="8" required autocomplete="new-password" /></label>
+        <button>Create Account</button>
+      </form>
+      <form class="col" id="loginForm" onsubmit="loginCustomer(event)">
+        <h3>Sign in</h3>
+        <label>Email: <input id="loginEmail" type="email" required autocomplete="username" /></label>
+        <label>Password: <input id="loginPassword" type="password" required autocomplete="current-password" /></label>
+        <button>Sign In</button>
+      </form>
+    </div>
+    <div id="customerAccount" hidden>
+      <form id="profileForm" onsubmit="saveCustomerProfile(event)">
+        <label>First name: <input id="profileName" required /></label>
+        <label>Last name: <input id="profileLastName" required /></label>
+        <label>Email: <input id="profileEmail" type="email" required /></label>
+        <label>Delivery address: <input id="deliveryAddress" required /></label>
+        <button>Save Profile and Address</button>
+      </form>
+      <button onclick="logoutCustomer()">Sign Out</button>
+      <button onclick="deactivateCustomer()">Deactivate Account</button>
+    </div>
+  </section>
 
   <!-- Search & Filter Restaurants -->
   <section>
@@ -112,6 +145,21 @@
     </div>
   </section>
 
+  <section id="customerShopping" hidden>
+    <h2>Your Cart</h2>
+    <button onclick="loadCustomerCart()">Refresh Cart</button>
+    <button onclick="clearCustomerCart()">Clear Cart</button>
+    <div id="customerCart"></div>
+    <p id="cartTotal"></p>
+    <p>Save your delivery address above before checking out. Prices are checked again at checkout.</p>
+    <button id="checkoutButton" onclick="checkoutCustomer()" disabled>Place Order</button>
+    <p id="shoppingMessage" role="status"></p>
+    <div id="orderConfirmation" role="status"></div>
+    <h2>Your Orders</h2>
+    <button onclick="loadCustomerOrders()">Refresh Orders</button>
+    <div id="customerOrders"></div>
+  </section>
+
   <!-- Create Restaurant -->
   <section>
     <h2>3. Add New Restaurant</h2>
@@ -132,5 +180,6 @@
   </section>
 
   <script src="/app.js"></script>
+  <script src="/customer.js"></script>
 </body>
 </html>

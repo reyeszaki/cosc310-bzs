@@ -204,6 +204,7 @@ async function loadMenu(restaurantId, category = "") {
           <strong>${item.name}</strong> <em>(${item.category})</em> - $${Number(item.price).toFixed(2)}
           <p>${item.description}</p>
           <p>Available: <span class="${item.is_available ? 'open' : 'closed'}">${item.is_available ? 'Yes' : 'No'}</span></p>
+          <button onclick="addToCustomerCart(${restaurantId}, ${item.id})" ${!item.is_available || !currentRestaurant.is_open ? 'disabled' : ''}>Add to Cart</button>
           <button onclick="openEditMenuItem('${itemJson}')">Edit Item</button>
           <button class="danger" onclick="deleteMenuItem(${item.id})">Delete Item</button>
         </div>
