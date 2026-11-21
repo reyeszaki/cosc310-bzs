@@ -1,4 +1,7 @@
-from fastapi import APIRouter, HTTPException, Path, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
+
+from app.api.dependencies import require_role
+from app.schema.users_schema import UserPublic
 
 from app.repository.menu_repo import MenuRepository
 from app.repository.restaurant_repo import RestaurantRepository
@@ -27,11 +30,15 @@ def get_menu(restaurant_id: int = Path(gt=0), category: str | None = None) -> Me
     "/items", response_model=MenuItem, status_code=status.HTTP_201_CREATED,
     summary="Add a menu item",
     description="Add an item to an existing restaurant and save it to JSON. The server assigns the item ID.",
-    responses={404: {"description": "Restaurant not found"}},
+    responses={401: {"description": "Sign-in required"},
+               403: {"description": "Management access denied"}, 404: {"description": "Restaurant not found"}},
 )
-def add_item(item: MenuItemCreate, restaurant_id: int = Path(gt=0)) -> MenuItem:
+def add_item(item: MenuItemCreate, restaurant_id: int = Path(gt=0),
+             user: UserPublic = Depends(require_role("owner", "admin"))) -> MenuItem:
     try:
-        return service.add_item(restaurant_id, item)
+        return service.add_item(restaurant_id, item, user)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
@@ -40,12 +47,16 @@ def add_item(item: MenuItemCreate, restaurant_id: int = Path(gt=0)) -> MenuItem:
     "/items/{item_id}", response_model=MenuItem,
     summary="Update a menu item",
     description="Replace all editable fields of an item belonging to this restaurant. Send name, description, price, category and is_available.",
-    responses={404: {"description": "Restaurant or menu item not found"}},
+    responses={401: {"description": "Sign-in required"},
+               403: {"description": "Management access denied"}, 404: {"description": "Restaurant or menu item not found"}},
 )
 def update_item(item: MenuItemUpdate, restaurant_id: int = Path(gt=0),
-                item_id: int = Path(gt=0)) -> MenuItem:
+                item_id: int = Path(gt=0),
+                user: UserPublic = Depends(require_role("owner", "admin"))) -> MenuItem:
     try:
-        return service.update_item(restaurant_id, item_id, item)
+        return service.update_item(restaurant_id, item_id, item, user)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
@@ -54,11 +65,15 @@ def update_item(item: MenuItemUpdate, restaurant_id: int = Path(gt=0),
     "/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a menu item",
     description="Delete an item belonging to this restaurant from JSON storage. A successful request has no response body.",
-    responses={404: {"description": "Restaurant or menu item not found"}},
+    responses={401: {"description": "Sign-in required"},
+               403: {"description": "Management access denied"}, 404: {"description": "Restaurant or menu item not found"}},
 )
-def delete_item(restaurant_id: int = Path(gt=0), item_id: int = Path(gt=0)) -> Response:
+def delete_item(restaurant_id: int = Path(gt=0), item_id: int = Path(gt=0),
+                user: UserPublic = Depends(require_role("owner", "admin"))) -> Response:
     try:
-        service.delete_item(restaurant_id, item_id)
+        service.delete_item(restaurant_id, item_id, user)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

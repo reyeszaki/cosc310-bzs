@@ -1,3 +1,4 @@
+import pytest
 import json
 
 from fastapi.testclient import TestClient
@@ -247,3 +248,14 @@ def test_menu_routes_have_descriptions_and_positive_id_constraints():
         for parameter in operation["parameters"]:
             if parameter["in"] == "path":
                 assert parameter["schema"]["exclusiveMinimum"] == 0
+
+
+@pytest.fixture(autouse=True)
+def management_test_user(monkeypatch):
+    # Existing CRUD tests run as an admin; access rules have their own tests.
+    from app.api.dependencies import get_current_user
+    from app.schema.users_schema import UserPublic
+
+    admin = UserPublic(id=100, name="Admin", last_name="Test",
+                       email="admin@example.ca", role="admin", is_active=True)
+    monkeypatch.setitem(app.dependency_overrides, get_current_user, lambda: admin)

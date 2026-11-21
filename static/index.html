@@ -72,6 +72,12 @@
   <section id="detailsSection" style="display: none;">
     <h2>2. Selected Restaurant Details & Menu</h2>
     <div id="restaurantDetails"></div>
+    <p id="managementMessage" role="status"></p>
+    <form id="assignOwnerForm" hidden onsubmit="assignRestaurantOwner(event)">
+      <label>Owner account ID: <input id="assignOwnerId" type="number" min="1" step="1" /></label>
+      <p>Leave blank to remove the owner. This must be an existing active owner account.</p>
+      <button>Save Owner</button>
+    </form>
 
     <!-- Edit Restaurant -->
     <div id="editRestaurantBox" class="card" style="display: none; background: #f9f9f9;">
@@ -102,7 +108,7 @@
     <div id="menuItems" style="margin-top: 10px;">No menu loaded.</div>
 
     <!-- Menu Item -->
-    <div class="row" style="margin-top: 1rem;">
+    <div class="row" id="menuManagement" style="margin-top: 1rem;" hidden>
       <div class="col card">
         <h4>Add Menu Item</h4>
         <form id="addMenuItemForm" onsubmit="handleAddMenuItem(event)">
@@ -161,8 +167,9 @@
   </section>
 
   <!-- Create Restaurant -->
-  <section>
+  <section id="createRestaurantSection" hidden>
     <h2>3. Add New Restaurant</h2>
+    <p>Owners create their own restaurant. Admins can create and assign restaurants.</p>
     <form id="createRestaurantForm" onsubmit="handleCreateRestaurant(event)">
       <label>Name: <input type="text" id="newName" required /></label>
       <label>Cuisine: <input type="text" id="newCuisine" required /></label>

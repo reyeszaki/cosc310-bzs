@@ -123,3 +123,13 @@ Each member should record their own AI use. Work written by a student using AI o
 - **Influence:** I used Codex to help connect the customer pages to our API. It generated the draft JavaScript, HTML changes and documentation. I tested the customer flow in the browser and confirmed it worked. Teammate review is still pending.
 - **Validation:** All 58 pytest tests passed. Browser checks with temporary data covered signing in, editing the cart, placing an order, viewing orders and signing out. A full server restart was not tested.
 - **Limitations:** Owner/admin permissions and protection against repeated or simultaneous checkouts still need work.
+
+## Restaurant and menu permissions
+
+- **Student(s):** Jean Zachary Reyes.
+- **Artifact:** Restaurant/menu permission checks, owner assignment, management controls and requests in the frontend, tests and documentation.
+- **Label:** AI-ASSISTED (development workflow)
+- **AI tool:** OpenAI Codex.
+- **Influence:** I asked Codex to connect the existing account roles to restaurant/menu management. It generated the draft changes, tests and documentation. My review and teammate review are still pending.
+- **Validation:** All 66 pytest tests passed locally, including 8 new access tests. Chrome checks with temporary data passed customer restrictions, owner edits and admin owner assignment. A full server restart was not tested.
+- **Limitations:** Trusted maintainers grant manager roles locally. There is no public role-promotion endpoint or complete admin user-management dashboard.

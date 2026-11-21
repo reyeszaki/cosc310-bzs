@@ -6,10 +6,9 @@ import json
 from pathlib import Path
 from threading import Lock
 
-DEFAULT_DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "carts.json"
 
 class CartRepository:
-    def __init__(self, file_path: str | Path = DEFAULT_DATA_PATH) -> None:
+    def __init__(self, file_path: str | Path = "data/carts.json") -> None:
         self.file_path = Path(file_path)
         self._lock = Lock()
 

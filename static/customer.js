@@ -11,6 +11,7 @@ async function customerRequest(path, method = "GET", data = null, authenticated 
   if (data !== null) options.body = JSON.stringify(data);
   const response = await fetch(path, options);
   if (response.status === 204) return null;
+
   const rawText = await response.text();
   let result = null;
   if (rawText) {
@@ -41,6 +42,7 @@ async function customerRequest(path, method = "GET", data = null, authenticated 
 function resetCustomer() {
   customerToken = "";
   customer = null;
+  refreshManagementControls();
   sessionStorage.removeItem("customerToken");
   document.getElementById("signInForms").hidden = false;
   document.getElementById("customerAccount").hidden = true;
@@ -63,7 +65,8 @@ function showCustomerProfile() {
   document.getElementById("profileLastName").value = customer.last_name;
   document.getElementById("profileEmail").value = customer.email;
   document.getElementById("deliveryAddress").value = customer.address || "";
-  document.getElementById("accountStatus").textContent = "Signed in as " + customer.name + ".";
+  document.getElementById("accountStatus").textContent = "Signed in as " + customer.name + " (" + customer.role + ").";
+  refreshManagementControls();
 }
 
 async function registerCustomer(event) {
@@ -297,3 +300,58 @@ async function restoreCustomer() {
 }
 
 restoreCustomer();
+
+
+function managementHeaders() {
+  return {"Content-Type": "application/json", "Authorization": "Bearer " + customerToken};
+}
+
+function canManageRestaurant(restaurant) {
+  if (!customer || !restaurant) return false;
+  if (customer.role === "admin") return true;
+  return customer.role === "owner" && restaurant.owner_id === customer.id;
+}
+
+function refreshManagementControls() {
+  const isAdmin = customer && customer.role === "admin";
+  const isManager = customer && (customer.role === "owner" || isAdmin);
+  document.getElementById("createRestaurantSection").hidden = !isManager;
+  for (const button of document.querySelectorAll("[data-management]")) {
+    const ownsRestaurant = customer && customer.role === "owner" && Number(button.dataset.ownerId) === customer.id;
+    button.hidden = !(isAdmin || ownsRestaurant);
+  }
+  document.getElementById("menuManagement").hidden = !canManageRestaurant(currentRestaurant);
+  document.getElementById("assignOwnerForm").hidden = !(isAdmin && currentRestaurant);
+  if (!canManageRestaurant(currentRestaurant)) toggleEditRestaurantBox(false);
+}
+
+async function showManagementError(response) {
+  let detail = null;
+  try {
+    const error = await response.json();
+    detail = error?.detail;
+  } catch {
+    detail = null;
+  }
+  document.getElementById("managementMessage").textContent =
+    typeof detail === "string" ? detail : `Request failed (${response.status}).`;
+}
+
+async function assignRestaurantOwner(event) {
+  event.preventDefault();
+  if (!currentRestaurant) return;
+  const value = document.getElementById("assignOwnerId").value;
+  const ownerId = value === "" ? null : Number(value);
+  if (ownerId !== null && (!Number.isInteger(ownerId) || ownerId < 1)) {
+    document.getElementById("managementMessage").textContent = "Enter a valid positive owner account ID.";
+    return;
+  }
+  try {
+    await customerRequest("/restaurants/" + currentRestaurant.id + "/owner", "PUT", {owner_id: ownerId});
+    document.getElementById("managementMessage").textContent = "Restaurant owner saved.";
+    await viewDetails(currentRestaurant.id);
+    await loadRestaurants();
+  } catch (error) {
+    document.getElementById("managementMessage").textContent = error.message;
+  }
+}

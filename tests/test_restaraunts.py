@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 import json
@@ -202,3 +203,23 @@ def test_endpoint_rejects_invalid_is_open():
     response = client.get("/restaurants?is_open=maybe")
     assert response.status_code == 422
 
+
+@pytest.fixture(autouse=True)
+def management_test_user():
+    # Existing CRUD tests run as an admin; access rules have their own tests.
+    from app.api.dependencies import get_current_user
+    from app.schema.users_schema import UserPublic
+
+    admin = UserPublic(
+        id=100,
+        name="Admin",
+        last_name="Test",
+        email="admin@example.ca",
+        role="admin",
+        is_active=True,
+    )
+    app.dependency_overrides[get_current_user] = lambda: admin
+    try:
+        yield
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)

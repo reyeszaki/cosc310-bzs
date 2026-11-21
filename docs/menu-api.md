@@ -108,3 +108,10 @@ A blank category shows everything. An unknown category returns an empty list.
 7. Stop and restart the app. GET the menu to check the saved changes.
 8. DELETE the demo item and GET the menu again.
 9. Run `python -m pytest -q`.
+
+## Management permissions
+
+Adding, updating or deleting menu items now requires an active owner/admin token.
+Owners can change only their assigned restaurant's menu; admins can change any menu.
+Guests receive 401 and signed-in customers or unrelated owners receive 403. Viewing
+and filtering menus remains public. See `management-access.md` for the access rules.
