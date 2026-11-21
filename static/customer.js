@@ -11,12 +11,30 @@ async function customerRequest(path, method = "GET", data = null, authenticated 
   if (data !== null) options.body = JSON.stringify(data);
   const response = await fetch(path, options);
   if (response.status === 204) return null;
-  const result = await response.json();
+
+  const rawText = await response.text();
+  let result = null;
+  if (rawText) {
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      if (!response.ok) {
+        if (authenticated && response.status === 401) resetCustomer();
+        const err = new Error(`Request failed (${response.status}).`);
+        err.status = response.status;
+        throw err;
+      }
+      throw new Error("Received an unexpected non-JSON response.");
+    }
+  }
+
   if (!response.ok) {
     if (authenticated && response.status === 401) resetCustomer();
-    let message = result.detail || "Request failed.";
+    let message = result?.detail || `Request failed (${response.status}).`;
     if (Array.isArray(message)) message = message.map(error => error.msg).join("; ");
-    throw new Error(message);
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
   }
   return result;
 }
@@ -99,6 +117,9 @@ async function saveCustomerProfile(event) {
     });
     showCustomerProfile();
     document.getElementById("accountStatus").textContent = "Profile and address saved.";
+    if (customer.role === "customer") {
+      await loadCustomerCart();
+    }
   } catch (error) {
     document.getElementById("accountStatus").textContent = error.message;
   }
@@ -237,6 +258,7 @@ async function checkoutCustomer() {
   document.getElementById("checkoutButton").disabled = true;
   document.getElementById("shoppingMessage").textContent = "Placing your order...";
   let saved = false;
+  let uncertainFailure = false;
   try {
     const order = await customerRequest("/checkout", "POST");
     saved = true;
@@ -246,13 +268,18 @@ async function checkoutCustomer() {
     document.getElementById("shoppingMessage").textContent = "Order placed successfully.";
     await loadCustomerOrders();
   } catch (error) {
-    document.getElementById("shoppingMessage").textContent = error.message + " Refresh your orders before retrying.";
+    uncertainFailure = !error.status || error.status >= 500;
+    document.getElementById("shoppingMessage").textContent = uncertainFailure
+      ? error.message + " Refresh your orders before retrying."
+      : error.message;
   } finally {
     checkoutBusy = false;
     if (customerToken) {
       await loadCustomerCart();
-      // After an uncertain failure, require checking orders before another attempt.
-      if (!saved) document.getElementById("checkoutButton").disabled = true;
+      // Only lock retry after an uncertain network/5xx failure where the order may have saved.
+      if (!saved && uncertainFailure) {
+        document.getElementById("checkoutButton").disabled = true;
+      }
     }
   }
 }
@@ -299,8 +326,15 @@ function refreshManagementControls() {
 }
 
 async function showManagementError(response) {
-  const error = await response.json();
-  document.getElementById("managementMessage").textContent = typeof error.detail === "string" ? error.detail : "Check the details and your access.";
+  let detail = null;
+  try {
+    const error = await response.json();
+    detail = error?.detail;
+  } catch {
+    detail = null;
+  }
+  document.getElementById("managementMessage").textContent =
+    typeof detail === "string" ? detail : `Request failed (${response.status}).`;
 }
 
 async function assignRestaurantOwner(event) {
@@ -308,7 +342,10 @@ async function assignRestaurantOwner(event) {
   if (!currentRestaurant) return;
   const value = document.getElementById("assignOwnerId").value;
   const ownerId = value === "" ? null : Number(value);
-  if (ownerId !== null && (!Number.isInteger(ownerId) || ownerId < 1)) return;
+  if (ownerId !== null && (!Number.isInteger(ownerId) || ownerId < 1)) {
+    document.getElementById("managementMessage").textContent = "Enter a valid positive owner account ID.";
+    return;
+  }
   try {
     await customerRequest("/restaurants/" + currentRestaurant.id + "/owner", "PUT", {owner_id: ownerId});
     document.getElementById("managementMessage").textContent = "Restaurant owner saved.";
