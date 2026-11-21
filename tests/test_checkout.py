@@ -218,3 +218,43 @@ def test_checkout_uses_cart_service_without_repository_access(setup_checkout):
     assert order.total == 6.20
     assert sample_carts.cleared is True
     assert len(orders.repository.get_all()) == 1
+
+
+def test_checkout_uses_updated_cart_quantity(setup_checkout):
+    client, folder, headers, carts, orders, menu_repo, cart_repo, order_repo = setup_checkout
+
+    # The setup starts with two teas priced at $3.10 each.
+    response = client.post(
+        "/cart/items",
+        headers=headers,
+        json={
+            "restaurant_id": 1,
+            "menu_item_id": 1,
+            "quantity": 1,
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["items"][0]["quantity"] == 3
+
+    # Change the quantity before checking out.
+    response = client.patch(
+        "/cart/items/1",
+        headers=headers,
+        json={"quantity": 4},
+    )
+    assert response.status_code == 200
+
+    response = client.post("/checkout", headers=headers)
+    assert response.status_code == 201
+
+    order = response.json()
+    assert order["customer_id"] == 1
+    assert order["items"][0]["quantity"] == 4
+    assert order["total"] == 12.40
+    assert order["status"] == "Placed"
+
+    # Confirm the order is saved and the cart is empty.
+    saved_order = order_repo.get_by_id(order["id"])
+    assert saved_order["total"] == 12.40
+    assert saved_order["items"][0]["quantity"] == 4
+    assert cart_repo.get_by_customer(1)["items"] == []
