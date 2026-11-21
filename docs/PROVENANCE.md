@@ -112,3 +112,14 @@ Each member should record their own AI use. Work written by a student using AI o
 - **Influence:** We used Codex to help us implement the feature step by step. We reviewed the code, followed along with the implementation, and made minor changes ourselves to keep it simple and consistent with what we have.
 - **Validation:** All 54 pytest tests passed, including 8 new checkout/order tests.
 - **Limitations:** Backend only. Separate order/cart writes are not transactional. Concurrent checkout and retry protection are not implemented.
+
+
+## Customer frontend integration
+
+- **Student(s):** Jean Zachary Reyes.
+- **Artifact:** Customer account/cart/order interface in static/index.html, static/customer.js, the menu Add to Cart button, and related documentation.
+- **Label:** AI-ASSISTED (development workflow)
+- **AI tool:** OpenAI Codex.
+- **Influence:** I used Codex to help connect the customer pages to our API. It generated the draft JavaScript, HTML changes and documentation. I tested the customer flow in the browser and confirmed it worked. Teammate review is still pending.
+- **Validation:** All 58 pytest tests passed. Browser checks with temporary data covered signing in, editing the cart, placing an order, viewing orders and signing out. A full server restart was not tested.
+- **Limitations:** Owner/admin permissions and protection against repeated or simultaneous checkouts still need work.

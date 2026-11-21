@@ -193,4 +193,5 @@ Create the submission tag only after choosing the final reviewed version. Do not
 Authenticated customers can use POST `/checkout`, GET `/orders` and GET
 `/orders/{order_id}`. Checkout validates the saved cart against current menu data,
 saves an order snapshot, then clears the cart. See `docs/checkout-api.md` for setup
-and limitations. Frontend checkout controls are not included.
+and limitations. The customer interface supports account creation/sign-in, profile
+and address updates, cart editing, checkout and saved orders.
