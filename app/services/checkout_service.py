@@ -12,7 +12,7 @@ class CheckoutService:
             raise PermissionError("Only customers can checkout")
         if customer.address is None or not customer.address.strip():
             raise ValueError("A delivery address is required")
-        cart = self.carts.cart_repo.get_by_customer(customer_id)
+        cart = self.carts.get_saved_cart(customer_id)
         if cart is None or not cart["items"]:
             raise ValueError("Cart is empty")
         restaurant_id = cart["restaurant_id"]

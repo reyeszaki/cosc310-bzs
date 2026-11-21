@@ -166,3 +166,55 @@ def test_clear_failure_keeps_saved_order(setup_checkout, monkeypatch):
     assert client.post("/checkout", headers=headers).status_code == 500
     assert len(order_repo.get_all()) == 1
     assert len(cart_repo.get_by_customer(1)["items"]) == 1
+
+
+def test_get_saved_cart_does_not_create_or_change_storage(setup_checkout):
+    client, folder, headers, carts, orders, _, _, _ = setup_checkout
+    original = (folder / 'carts.json').read_text()
+    saved = carts.get_saved_cart(1)
+    assert saved['items'] == [{'menu_item_id': 1, 'quantity': 2}]
+    client.post('/users', json={
+        'name': 'Bob', 'last_name': 'Lee', 'email': 'bob@example.ca',
+        'password': 'secret123',
+    })
+    assert carts.get_saved_cart(2) is None
+    assert (folder / 'carts.json').read_text() == original
+
+
+def test_get_saved_cart_rejects_inactive_customer(setup_checkout):
+    client, folder, headers, carts, orders, _, _, _ = setup_checkout
+    original = (folder / 'carts.json').read_text()
+    dependencies.user_service.repository.update(1, {'is_active': False})
+    with pytest.raises(PermissionError):
+        carts.get_saved_cart(1)
+    assert (folder / 'carts.json').read_text() == original
+
+
+def test_checkout_uses_cart_service_without_repository_access(setup_checkout):
+    from app.services.checkout_service import CheckoutService
+
+    client, folder, headers, carts, orders, _, _, _ = setup_checkout
+    saved = carts.get_saved_cart(1)
+
+    class SampleCartService:
+        # Only expose the methods checkout needs, not a cart repository.
+        def __init__(self):
+            self.cleared = False
+
+        def get_saved_cart(self, customer_id):
+            assert customer_id == 1
+            return saved
+
+        def clear_cart(self, customer_id):
+            assert customer_id == 1
+            self.cleared = True
+
+    sample_carts = SampleCartService()
+    service = CheckoutService(
+        dependencies.user_service, sample_carts, carts.menu_service,
+        carts.restaurant_repo, orders,
+    )
+    order = service.checkout(1)
+    assert order.total == 6.20
+    assert sample_carts.cleared is True
+    assert len(orders.repository.get_all()) == 1

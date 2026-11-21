@@ -14,9 +14,12 @@ class CartService:
         self.require_active_customer = require_active_customer
         self.restaurant_repo = restaurant_repo
 
-    def get_or_create_cart(self, customer_id: int) -> Cart:
+    def get_saved_cart(self, customer_id: int) -> dict | None:
         self.require_active_customer(customer_id)
-        cart = self.cart_repo.get_by_customer(customer_id)
+        return self.cart_repo.get_by_customer(customer_id)
+
+    def get_or_create_cart(self, customer_id: int) -> Cart:
+        cart = self.get_saved_cart(customer_id)
 
         if cart is None:
             cart = self._empty_cart(customer_id)
