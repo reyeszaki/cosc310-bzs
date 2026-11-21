@@ -1,4 +1,3 @@
-# here ill add the 5 methods to handling cart operations:
 
 # add item, remove item, update quantity (to get a specific item and set its quantity), get/retrieve cart, clear cart
 # all based on the different schemas we have for cart
