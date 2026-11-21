@@ -45,7 +45,10 @@ MenuItemID = Annotated[int, Path(gt=0)]
 
 @router.get("", response_model=Cart)
 def get_cart(customer_id: CustomerID, service: Service) -> Cart:
-    return service.get_or_create_cart(customer_id)
+    try:
+        return service.get_or_create_cart(customer_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.post("/items", response_model=Cart, status_code=201)
@@ -85,4 +88,7 @@ def remove_item(
 
 @router.delete("/items", response_model=Cart)
 def clear_cart(customer_id: CustomerID, service: Service) -> Cart:
-    return service.clear_cart(customer_id)
+    try:
+        return service.clear_cart(customer_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
