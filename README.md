@@ -202,3 +202,16 @@ Sign in as an owner to manage your assigned restaurants, or as an admin to manag
 all restaurants and assign owners. Customers can browse and order but cannot edit
 restaurant/menu data. Public registration creates customer accounts only.
 See `docs/management-access.md` for local manager setup, API rules and test steps.
+
+### Quick local setup for demo manager accounts (for testing/grading)
+
+To create local `admin` and `owner` accounts without committing credentials to the
+repository, run:
+
+```bash
+python scripts/seed_demo_managers.py
+```
+
+This creates (or updates) two local-only accounts (`admin@example.ca` and
+`owner@example.ca`, password `secret123`) in `data/users.json` and prints their
+account IDs for use in the admin owner-assignment form.
