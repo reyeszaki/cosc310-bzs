@@ -1,5 +1,11 @@
 let currentRestaurant = null;
 
+function displayText(value) {
+  const span = document.createElement("span");
+  span.textContent = value;
+  return span.innerHTML;
+}
+
 async function loadRestaurants() {
   const search = document.getElementById("searchInput").value.trim();
   const cuisine = document.getElementById("cuisineInput").value.trim();
@@ -25,13 +31,14 @@ async function loadRestaurants() {
 
     listDiv.innerHTML = data.map(r => `
       <div class="card">
-        <h3>${r.name} (${r.cuisine})</h3>
-        <p>Address: ${r.address}</p>
+        <h3>${displayText(r.name)} (${displayText(r.cuisine)})</h3>
+        <p>Address: ${displayText(r.address)}</p>
         <p>Status: <span class="${r.is_open ? 'open' : 'closed'}">${r.is_open ? 'Open' : 'Closed'}</span></p>
         <button onclick="viewDetails(${r.id})">View Details & Menu</button>
-        <button class="danger" onclick="deleteRestaurant(${r.id})">Delete</button>
+        <button data-management data-owner-id="${r.owner_id || ''}" hidden class="danger" onclick="deleteRestaurant(${r.id})">Delete</button>
       </div>
     `).join("");
+    refreshManagementControls();
   } catch (err) {
     document.getElementById("restaurantList").innerText = err.message;
   }
@@ -58,16 +65,17 @@ async function viewDetails(restaurantId) {
 
     document.getElementById("restaurantDetails").innerHTML = `
       <div class="card">
-        <h3>${restaurant.name} (ID: ${restaurant.id})</h3>
-        <p><strong>Cuisine:</strong> ${restaurant.cuisine} | <strong>Address:</strong> ${restaurant.address}</p>
+        <h3>${displayText(restaurant.name)} (ID: ${restaurant.id})</h3>
+        <p><strong>Cuisine:</strong> ${displayText(restaurant.cuisine)} | <strong>Address:</strong> ${displayText(restaurant.address)}</p>
         <p><strong>Status:</strong> <span class="${restaurant.is_open ? 'open' : 'closed'}">${restaurant.is_open ? 'Open' : 'Closed'}</span></p>
-        <button onclick="toggleRestaurantStatus()">Set ${restaurant.is_open ? 'Closed' : 'Open'}</button>
-        <button onclick="openEditRestaurantBox()">Edit Info</button>
-        <button class="danger" onclick="deleteRestaurant(${restaurant.id})">Delete Restaurant</button>
+        <button data-management data-owner-id="${restaurant.owner_id || ''}" hidden onclick="toggleRestaurantStatus()">Set ${restaurant.is_open ? 'Closed' : 'Open'}</button>
+        <button data-management data-owner-id="${restaurant.owner_id || ''}" hidden onclick="openEditRestaurantBox()">Edit Info</button>
+        <button class="danger" data-management data-owner-id="${restaurant.owner_id || ''}" hidden onclick="deleteRestaurant(${restaurant.id})">Delete Restaurant</button>
       </div>
     `;
 
     await loadMenu(restaurantId);
+    refreshManagementControls();
   } catch (err) {
     console.error(err);
   }
@@ -85,7 +93,7 @@ async function handleCreateRestaurant(event) {
   try {
     const res = await fetch("/restaurants", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: managementHeaders(),
       body: JSON.stringify(payload)
     });
 
@@ -131,7 +139,7 @@ async function handleUpdateRestaurant(event) {
 
   const res = await fetch(`/restaurants/${currentRestaurant.id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: managementHeaders(),
     body: JSON.stringify(payload)
   });
 
@@ -139,6 +147,8 @@ async function handleUpdateRestaurant(event) {
     toggleEditRestaurantBox(false);
     await viewDetails(currentRestaurant.id);
     await loadRestaurants();
+  } else {
+    await showManagementError(res);
   }
 }
 
@@ -151,19 +161,24 @@ async function toggleRestaurantStatus() {
     is_open: !currentRestaurant.is_open
   };
 
-  await fetch(`/restaurants/${currentRestaurant.id}`, {
+  const response = await fetch(`/restaurants/${currentRestaurant.id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: managementHeaders(),
     body: JSON.stringify(payload)
   });
 
+  if (!response.ok) {
+    await showManagementError(response);
+    return;
+  }
   await viewDetails(currentRestaurant.id);
   await loadRestaurants();
 }
 
 async function deleteRestaurant(restaurantId) {
   const res = await fetch(`/restaurants/${restaurantId}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: managementHeaders()
   });
 
   if (res.ok) {
@@ -172,6 +187,8 @@ async function deleteRestaurant(restaurantId) {
       currentRestaurant = null;
     }
     loadRestaurants();
+  } else {
+    await showManagementError(res);
   }
 }
 
@@ -198,17 +215,19 @@ async function loadMenu(restaurantId, category = "") {
     }
 
     menuDiv.innerHTML = items.map(item => {
-      const itemJson = encodeURIComponent(JSON.stringify(item));
+      const itemJson = encodeURIComponent(JSON.stringify(item)).replaceAll("'", "%27");
       return `
         <div class="card">
-          <strong>${item.name}</strong> <em>(${item.category})</em> - $${Number(item.price).toFixed(2)}
-          <p>${item.description}</p>
+          <strong>${displayText(item.name)}</strong> <em>(${displayText(item.category)})</em> - $${Number(item.price).toFixed(2)}
+          <p>${displayText(item.description)}</p>
           <p>Available: <span class="${item.is_available ? 'open' : 'closed'}">${item.is_available ? 'Yes' : 'No'}</span></p>
-          <button onclick="openEditMenuItem('${itemJson}')">Edit Item</button>
-          <button class="danger" onclick="deleteMenuItem(${item.id})">Delete Item</button>
+          <button onclick="addToCustomerCart(${restaurantId}, ${item.id})" ${!item.is_available || !currentRestaurant.is_open ? 'disabled' : ''}>Add to Cart</button>
+          <button data-management data-owner-id="${currentRestaurant.owner_id || ''}" hidden onclick="openEditMenuItem('${itemJson}')">Edit Item</button>
+          <button class="danger" data-management data-owner-id="${currentRestaurant.owner_id || ''}" hidden onclick="deleteMenuItem(${item.id})">Delete Item</button>
         </div>
       `;
     }).join("");
+    refreshManagementControls();
   } catch (err) {
     menuDiv.innerHTML = "<p>Error loading menu.</p>";
   }
@@ -243,7 +262,7 @@ async function handleAddMenuItem(event) {
 
   const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: managementHeaders(),
     body: JSON.stringify(payload)
   });
 
@@ -295,7 +314,7 @@ async function handleUpdateMenuItem(event) {
   // Send all menu item fields using PUT, like restaurant updates.
   const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: managementHeaders(),
     body: JSON.stringify(payload)
   });
 
@@ -313,11 +332,14 @@ async function deleteMenuItem(itemId) {
   if (!currentRestaurant) return;
 
   const res = await fetch(`/restaurants/${currentRestaurant.id}/menu/items/${itemId}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: managementHeaders()
   });
 
   if (res.ok) {
     loadMenu(currentRestaurant.id);
+  } else {
+    await showManagementError(res);
   }
 }
 

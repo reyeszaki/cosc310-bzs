@@ -52,3 +52,12 @@ POST and PUT require `name`, `cuisine`, `address`, and `is_open`:
 7. Stop the server with Ctrl+C, restart it, and run `GET /restaurants` again to demonstrate persistence.
 8. `DELETE /restaurants/{restaurant_id}` on the demo restaurant and run `GET` to confirm it was removed.
 9. In another terminal with the virtual environment active, run `python -m pytest -q`.
+
+## Management permissions
+
+Restaurant creation, updates and deletion now require an active owner/admin token.
+Owners can manage only their own restaurants; an owner's new restaurant gets their
+user ID as owner_id. Admins can manage all restaurants and assign owners with
+PUT `/restaurants/{restaurant_id}/owner`. Old records without owner_id still load.
+Read-only restaurant endpoints remain public. See `management-access.md` for setup
+and 401/403 responses. Normal creation/update bodies cannot change ownership.
